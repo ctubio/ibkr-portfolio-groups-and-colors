@@ -1,0 +1,19 @@
+{
+   "author": "analpaper",
+   "name": "Group or color IBKR Portfolio Positions by Growth or High-Yield Dividend",
+   "short_name": "IBKR groups and colors",
+   "description": "At IBKR Client Portal, click the name of a Portfolio Position to change the color, or double-click it to change the group.",
+   "homepage_url": "https://github.com/ctubio/ibkr-portfolio-groups-and-colors",
+   "icons": {
+      "128": "img/logo/ico-logo.png"
+   },
+   "content_scripts": [ {
+      "js": [ "content.js" ],
+      "matches": [ "https://www.interactivebrokers.ie/*" ]
+   } ],
+   "default_locale": "en",
+   "host_permissions": [ "https://www.interactivebrokers.ie/*" ],
+   "permissions": [ "storage" ],
+   "manifest_version": 3,
+   "version": "1.0.0"
+}
