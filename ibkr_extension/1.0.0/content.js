@@ -148,7 +148,7 @@ async function enhanceTickers() {
 
     if (!h3 || h3.innerText.split(" ").slice(0,2).join(" ") != "Your Holdings") return;
 
-    h3.innerHTML = h3.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView" style="color:rgb(221, 221, 221);font-size: 16px;font-weight: normal;cursor:pointer;"></span>';
+    h3.innerHTML = h3.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView" style="font-size: 16px;font-weight: normal;cursor:pointer;"></span>';
 
     document.querySelector('span#toggleCustomView').addEventListener("click", async (e) => {
       e.stopPropagation();
