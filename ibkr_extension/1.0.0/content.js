@@ -138,8 +138,40 @@ async function enhanceCounter() {
   });
 }
 
-var timeOut;
+var timeOut, timeOut2;
 async function enhanceTickers() {
+  if (!document.querySelector('textarea#calcNotes')) {
+    clearTimeout(timeOut2);
+    timeOut2 = setTimeout(async () => {
+      if (!document.querySelector('textarea#calcNotes')) {
+        const sdiv = document.querySelector('div.tws-shortcuts');
+        if (!sdiv) return
+
+        var data = await promiseWrapper('calcNotes', getStorage);
+        if (!data['calcNotes']) data['calcNotes'] = '';
+
+        const text = document.createElement("textarea");
+        text.id = 'calcNotes';
+        text.spellcheck = false;
+        text.value = data['calcNotes'];
+        text.style = 'width: 90%;margin-left: 20px;height: 150px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
+        sdiv.after(text);
+
+        text.addEventListener("keyup", async (e) => {
+          var val = e.target.value;
+          // var lines = val.split('\n');
+          // if (lines.length>0 && lines[0][lines[0].length-1] == "=") {
+            // lines[0] += Function("'use strict'; return ("+lines[0].substr(0, lines[0].length-1)+")")()
+            // val = lines.join('\n');
+          // }
+          var next_data = {};
+          next_data['calcNotes'] = val;
+          await promiseWrapper(next_data, setStorage)
+        })
+      }
+    }, 100);
+  }
+
   if (!document.querySelector('span#toggleCustomView')) {
     const div = document.querySelector('div.ptf-positions');
     if (!div) return
