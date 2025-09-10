@@ -138,12 +138,39 @@ async function enhanceCounter() {
   });
 }
 
+function transformCopyPaste(val) {
+  const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot( \d+ @ [\.|\d]+ )on \S+\n\t?\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+  if (bought) {
+    return bought[1].trim() + "\n" + "\n" + bought[2] + bought[3] + "-" + (parseFloat(bought[4]) + parseFloat(bought[5])).toString() + "\n" + bought[6];
+  } else {
+    const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold( \d+ @ [\.|\d]+ )on \S+\n\t?\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+    if (sold) {
+      return sold[1].trim() + "\n" + "\n" + sold[2] + sold[3] + "+" + (parseFloat(sold[4]) - parseFloat(sold[5])).toString() + "\n" + sold[6];
+    }
+  }
+  return '';
+}
+
 var timeOut, timeOut2;
 async function enhanceTickers() {
   if (!document.querySelector('textarea#calcNotes')) {
     clearTimeout(timeOut2);
     timeOut2 = setTimeout(async () => {
       if (!document.querySelector('textarea#calcNotes')) {
+
+        if (document.querySelector('h1') && document.querySelector('h1').innerText == 'Orders & Trades') {
+          document.querySelectorAll('table tr._tbgr').forEach(async (tr) => {
+            tr.addEventListener("click", async (e) => {
+              e.stopPropagation();
+              e.preventDefault();
+              var next_trade = {};
+              next_trade['copypaste'] = tr.innerText.trim();
+              await promiseWrapper(next_trade, setStorage)
+              window.location.replace('#/dashboard/positions');
+            });
+          });
+        }
+
         const sdiv = document.querySelector('div.tws-shortcuts');
         if (!sdiv) return
 
@@ -154,19 +181,31 @@ async function enhanceTickers() {
         text.id = 'calcNotes';
         text.spellcheck = false;
         text.value = data['calcNotes'];
+
+        var copypaste = await promiseWrapper('copypaste', getStorage);
+        if (!copypaste['copypaste']) copypaste['copypaste'] = '';
+        if (copypaste['copypaste'].length) {
+          if (!text.value || text.value[text.value.length-1] != "\n") text.value += "\n";
+          const transform = transformCopyPaste(text.value+copypaste['copypaste']);
+          if (transform) {
+            text.value = transform .trim()+ "\n";
+            var next_data = {};
+            next_data['calcNotes'] = text.value;
+            await promiseWrapper(next_data, setStorage)
+            var next_trade = {};
+            next_trade['copypaste'] = '';
+            await promiseWrapper(next_trade, setStorage)
+          }
+        }
+
         text.style = 'width: 90%;text-transform: uppercase;opacity: 0.4;margin-left: 20px;height: 180px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
         sdiv.after(text);
         text.addEventListener("keyup", async (e) => {
           var val = e.target.value;
           if (val.indexOf('Bought') != val.indexOf('Filled')) {
-            const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot( \d+ @ [\.|\d]+ )on \S+\n\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
-            if (bought) {
-              e.target.value = val = bought[1] + "\n" + "\n" + bought[2] + bought[3] + "-" + (parseFloat(bought[4]) + parseFloat(bought[5])).toString() + "\n" + bought[6];
-            } else {
-              const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold( \d+ @ [\.|\d]+ )on \S+\n\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
-              if (sold) {
-                e.target.value = val = sold[1] + "\n" + "\n" + sold[2] + sold[3] + "+" + (parseFloat(sold[4]) - parseFloat(sold[5])).toString() + "\n" + sold[6];
-              }
+            const transform = transformCopyPaste(val);
+            if (transform) {
+              e.target.value = val = transform;
             }
           }
           var next_data = {};
@@ -181,6 +220,7 @@ async function enhanceTickers() {
             // span.style.fontWeight = '600';
           });
         }
+
         if (document.querySelector('.tws-shortcuts button:last-of-type')) {
           const trades = document.createElement("button");
           trades.innerHTML = '<span><p>Trades</p></span>';
@@ -193,6 +233,7 @@ async function enhanceTickers() {
             window.location.replace('#/orders/trades');
           });
         }
+
       }
     }, 100);
   }
