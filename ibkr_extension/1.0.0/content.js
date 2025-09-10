@@ -154,20 +154,45 @@ async function enhanceTickers() {
         text.id = 'calcNotes';
         text.spellcheck = false;
         text.value = data['calcNotes'];
-        text.style = 'width: 90%;margin-left: 20px;height: 150px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
+        text.style = 'width: 90%;text-transform: uppercase;opacity: 0.4;margin-left: 20px;height: 180px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
         sdiv.after(text);
-
         text.addEventListener("keyup", async (e) => {
           var val = e.target.value;
-          // var lines = val.split('\n');
-          // if (lines.length>0 && lines[0][lines[0].length-1] == "=") {
-            // lines[0] += Function("'use strict'; return ("+lines[0].substr(0, lines[0].length-1)+")")()
-            // val = lines.join('\n');
-          // }
+          if (val.indexOf('Bought') != val.indexOf('Filled')) {
+            const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot( \d+ @ [\.|\d]+ )on \S+\n\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+            if (bought) {
+              e.target.value = val = bought[1] + "\n" + "\n" + bought[2] + bought[3] + "-" + (parseFloat(bought[4]) + parseFloat(bought[5])).toString() + "\n" + bought[6];
+            } else {
+              const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold( \d+ @ [\.|\d]+ )on \S+\n\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+              if (sold) {
+                e.target.value = val = sold[1] + "\n" + "\n" + sold[2] + sold[3] + "+" + (parseFloat(sold[4]) - parseFloat(sold[5])).toString() + "\n" + sold[6];
+              }
+            }
+          }
           var next_data = {};
           next_data['calcNotes'] = val;
           await promiseWrapper(next_data, setStorage)
         })
+
+        if (document.querySelector('.account-alias__container__account-values')) {
+          document.querySelectorAll('.account-alias__container__account-values span').forEach((span) => {
+            if (span.className.indexOf('numeric')==-1)
+              span.style.fontSize = '1.425rem';
+            // span.style.fontWeight = '600';
+          });
+        }
+        if (document.querySelector('.tws-shortcuts button:last-of-type')) {
+          const trades = document.createElement("button");
+          trades.innerHTML = '<span><p>Trades</p></span>';
+          trades.type = 'button';
+          trades.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
+          document.querySelector('.tws-shortcuts button:last-of-type').after(trades);
+          trades.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            window.location.replace('#/orders/trades');
+          });
+        }
       }
     }, 100);
   }
