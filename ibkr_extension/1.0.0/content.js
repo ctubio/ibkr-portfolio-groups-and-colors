@@ -43,7 +43,7 @@ function applyDisplayForTicker(conid, display) {
 }
 
 function applyOpacityForTicker(conid, opacity) {
-  applyCssRule(conid, 2, 'td[conid="'+conid+'"] { opacity:'+(opacity == 'none' ? '0.7' : '1')+'; }');
+  applyCssRule(conid, 2, 'td[conid="'+conid+'"] span { opacity:'+(opacity == 'none' ? '0.7' : '1')+'; }');
 }
 
 async function setColorForTicker(conid, ticker) {
@@ -159,8 +159,21 @@ function transformCopyPaste(val) {
 
 var timeOut, timeOut2;
 // var prices = {};
-var col1, col2, col3;
+var col0, col1, col2, col3;
 async function enhanceTickers(records) {
+  var chart = document.querySelector('.quote-mini-chart .highcharts-container');
+  if (chart && !chart.dataset.enhanced) {
+    chart.dataset.enhanced = "true";
+    chart.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      var ticker = document.querySelector('.quote-symbol div');
+      if (ticker) {
+        window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", {popup: true})
+      }
+    });
+  }
+
   if (col1 && col2 && col3) {
     // const grid1 = document.querySelectorAll("div.ptf-positions table td:nth-child("+col2+") span");
     const grid2 = document.querySelectorAll("div.ptf-positions table td:nth-child("+col3+") span, div.ptf-positions table td:nth-child("+col1+") span");
@@ -273,7 +286,7 @@ async function enhanceTickers(records) {
         if (document.querySelector('.account-alias__container__account-values')) {
           document.querySelectorAll('.account-alias__container__account-values span').forEach((span) => {
             if (span.className.indexOf('numeric')==-1)
-              span.style.fontSize = '1.425rem';
+              span.style.fontSize = '1.825rem';
             // span.style.fontWeight = '600';
           });
         }
@@ -308,6 +321,11 @@ async function enhanceTickers(records) {
               b.style.position = "relative";
               b.style.left = "230px";
               b.style.fontSize = "0px";
+              b.addEventListener("click", (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                window.location.assign('#/orders');
+              });
             } else b.remove();
             // if (document.querySelector('.tws-shortcuts button:last-of-type') && b.classList.contains('nav-item')) {
               // console.log("REMOVE", b)
@@ -330,11 +348,13 @@ async function enhanceTickers(records) {
             // }
             // else b.remove();
           })
+
           var ith = 2;
           document.querySelectorAll('div.ptf-positions table th').forEach((th) => {
             if (th.innerText.trim() == 'ASK') {col1 = ith;}
             else if (th.innerText.trim() == 'LAST') {col2 = ith;}
             else if (th.innerText.trim() == 'BID') {col3 = ith;}
+            else if (th.innerText.trim() == 'AVG PRICE') {col0 = ith;}
             ith++;
           });
           const styleEl = document.createElement("style");
@@ -349,9 +369,9 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-positions td {font-size: 110%;}", styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule(".pos-widget table td, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", styleEl.sheet.cssRules.length);
+          /*td.bg15-accent*/styleEl.sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.order_ticket__submit-view > .flex-row {display: none;}', styleEl.sheet.cssRules.length);
+          /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row {display: none;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', styleEl.sheet.cssRules.length);
@@ -359,11 +379,15 @@ async function enhanceTickers(records) {
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -20px;width: 65%;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.side-panel {max-width: 346px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.sl-search-bar {zoom: 0.8;top: -6px;background-color: #150f0c;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ib-bar3__trade-btn-container {top: -6px;position: relative;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.sl-search-results {zoom: 1.2;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 104px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 845px;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule(".flash-green {color: #00c853;animation: flashGreen 0.8s ease;}", styleEl.sheet.cssRules.length);
@@ -450,7 +474,6 @@ const observer = new MutationObserver((records) => {
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
-
 // const utterance = new SpeechSynthesisUtterance("Welcome to this tutorial!");
 
 // // Select a voice
@@ -459,3 +482,7 @@ observer.observe(document.body, { childList: true, subtree: true });
 
 // // Speak the text
 // speechSynthesis.speak(new SpeechSynthesisUtterance("ACN"));
+
+// setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(document.querySelector('#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span').innerText)));},10000);
+
+// setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(document.querySelector('td[conid="67889930"] span').innerText + " " + parseInt(document.querySelector('tr:has(td[conid="67889930"]) td:nth-child(7)').innerText.replace("C", ""))))},10000);
