@@ -139,19 +139,25 @@ async function enhanceCounter() {
 }
 
 function transformCopyPaste(val) {
-  const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot( \d+ @ [\.|\d]+ )on \S+\n\t?\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+  const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
   if (bought) {
     if (parseFloat(bought[3]).toString().length<3) {
-      bought[3] = " ".repeat(3-parseFloat(bought[3]).toString().length) + bought[3];
+      bought[3] = "0".repeat(3-parseFloat(bought[3]).toString().length) + bought[3];
     }
-    return bought[1].trim() + "\n" + "\n" + bought[2] + bought[3] + "-" + (parseFloat(bought[4]) + parseFloat(bought[5])).toFixed(2) + "\n" + bought[6];
+    if (bought[2].length<4) {
+      bought[2] += " ".repeat(4-bought[2].length);
+    }
+    return bought[1].trim() + "\n+" + bought[2] + " " + bought[3] + " @ " + bought[4] /*+ "-" + (parseFloat(bought[5]) + parseFloat(bought[6])).toFixed(2)*/ + "\n" + bought[7];
   } else {
-    const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold( \d+ @ [\.|\d]+ )on \S+\n\t?\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+    const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
     if (sold) {
       if (parseFloat(sold[3]).toString().length<3) {
-        sold[3] = " ".repeat(3-parseFloat(sold[3]).toString().length) + sold[3];
+        sold[3] = "0".repeat(3-parseFloat(sold[3]).toString().length) + sold[3];
       }
-      return sold[1].trim() + "\n" + "\n" + sold[2] + sold[3] + "+" + (parseFloat(sold[4]) - parseFloat(sold[5])).toFixed(2) + "\n" + sold[6];
+      if (sold[2].length<4) {
+        sold[2] += " ".repeat(4-sold[2].length);
+      }
+      return sold[1].trim() + "\n-" + sold[2] + " " + sold[3] + " @ " + sold[4] /*+ "+" + (parseFloat(sold[5]) - parseFloat(sold[6])).toFixed(2)*/ + "\n" + sold[7];
     }
   }
   return '';
@@ -159,7 +165,7 @@ function transformCopyPaste(val) {
 
 var timeOut, timeOut2;
 // var prices = {};
-var col0, col1, col2, col3;
+var col0, col1, col2, col3, col4, col5, col6, col7, col8;
 async function enhanceTickers(records) {
   var chart = document.querySelector('.quote-mini-chart .highcharts-container');
   if (chart && !chart.dataset.enhanced) {
@@ -169,7 +175,7 @@ async function enhanceTickers(records) {
       e.preventDefault();
       var ticker = document.querySelector('.quote-symbol div');
       if (ticker) {
-        window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", {popup: true})
+        window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", "width=1500,height=400,top=400,left=600")
       }
     });
   }
@@ -268,7 +274,7 @@ async function enhanceTickers(records) {
           }
         }
 
-        text.style = 'width: 90%;text-transform: uppercase;opacity: 0.4;margin-left: 20px;height: 220px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
+        text.style = 'width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
         sdiv.after(text);
         text.addEventListener("keyup", async (e) => {
           var val = e.target.value;
@@ -319,7 +325,7 @@ async function enhanceTickers(records) {
           document.querySelectorAll('div.nav-container button[aria-label="Trade"]').forEach((b) => {
             if (b.classList.contains('nav-item')) {
               b.style.position = "relative";
-              b.style.left = "230px";
+              b.style.left = "212px";
               b.style.fontSize = "0px";
               b.addEventListener("click", (e) => {
                 e.stopPropagation();
@@ -355,6 +361,11 @@ async function enhanceTickers(records) {
             else if (th.innerText.trim() == 'LAST') {col2 = ith;}
             else if (th.innerText.trim() == 'BID') {col3 = ith;}
             else if (th.innerText.trim() == 'AVG PRICE') {col0 = ith;}
+            else if (th.innerText.trim() == 'BID SIZE') {col4 = ith;}
+            else if (th.innerText.trim() == 'ASK SIZE') {col5 = ith;}
+            else if (th.innerText.trim() == 'MARKET VALUE') {col6 = ith;}
+            else if (th.innerText.trim() == '% OF NET LIQ') {col7 = ith;}
+            else if (th.innerText.trim() == 'UNREALIZED P&L %') {col8 = ith;}
             ith++;
           });
           const styleEl = document.createElement("style");
@@ -365,26 +376,34 @@ async function enhanceTickers(records) {
             // styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col2+") span {transition: color 1s ease;}", styleEl.sheet.cssRules.length);
             styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col1+") div, div.ptf-positions table td:nth-child("+col3+") div {opacity:0.6;}", styleEl.sheet.cssRules.length);
           }
-          styleEl.sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;}", styleEl.sheet.cssRules.length);
+          // if (col4 && col5 && col6 && col7 && col8 && col0) {
+          if (col1 && col2 && col3) {
+            styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col4+") div, div.ptf-positions table td:nth-child("+col5+") div{color:#3392ff;}", styleEl.sheet.cssRules.length);
+            // styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col6+") div, div.ptf-positions table td:nth-child("+col7+"), div.ptf-positions table td:nth-child("+col8+") span , div.ptf-positions table td:nth-child("+col0+") span {color:#bdcc70;}", styleEl.sheet.cssRules.length);
+            styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col1+") div, div.ptf-positions table td:nth-child("+col2+") span, div.ptf-positions table td:nth-child("+col3+") div{color:#bdcc70;}", styleEl.sheet.cssRules.length);
+          }
+          styleEl.sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-positions td {font-size: 110%;}", styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row {display: none;}', styleEl.sheet.cssRules.length);
+          /*td.bg15-accent*/styleEl.sheet.insertRule('#cp-header div.one-head div.one-head-menu > button:nth-child(1), #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, div.pane-subactions > div:nth-child(4), div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, button.ptf-positions__expand-collapse-btn {display: none;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -20px;width: 65%;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.side-panel {max-width: 346px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.side-panel {max-width: 328px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ib-bar3__trade-btn-container {top: -6px;position: relative;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.sl-search-results {zoom: 1.2;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 104px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 101px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(4), div.ptf-positions table col:nth-child("+col4+") , div.ptf-positions table col:nth-child("+col5+") {width: 80px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child("+col1+"), div.ptf-positions table col:nth-child("+col2+") , div.ptf-positions table col:nth-child("+col3+") {width: 100px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 845px;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
@@ -394,6 +413,7 @@ async function enhanceTickers(records) {
           // styleEl.sheet.insertRule(".flash-red {color: #d50000;animation: flashRed 0.8s ease;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".fade-opacity {animation: fadeOpacity 21s linear forwards;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', styleEl.sheet.cssRules.length);
         }
       }
     }, 300);
