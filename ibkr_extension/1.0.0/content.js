@@ -165,7 +165,6 @@ function transformCopyPaste(val) {
 
 var timeOut, timeOut2;
 // var prices = {};
-var col0, col1, col2, col3, col4, col5, col6, col7, col8;
 async function enhanceTickers(records) {
   var chart = document.querySelector('.quote-mini-chart .highcharts-container');
   if (chart && !chart.dataset.enhanced) {
@@ -180,56 +179,54 @@ async function enhanceTickers(records) {
     });
   }
 
-  if (col1 && col2 && col3) {
-    // const grid1 = document.querySelectorAll("div.ptf-positions table td:nth-child("+col2+") span");
-    const grid2 = document.querySelectorAll("div.ptf-positions table td:nth-child("+col3+") span, div.ptf-positions table td:nth-child("+col1+") span");
-    if (/*grid1 &&*/ grid2) {
-      for (const r of records) {
-        // grid1.forEach((td) => {
-          // if (td === r.target) {
-            // var num = (r.addedNodes[0].data || '').replace('C', '').replace('F', '');
-            // if (!Number(num)) return;
-            // var newNum = parseFloat(num);
-            // var oldNum = prices[r.target.parentNode.parentNode.parentNode.querySelectorAll('td')[1].innerText.trim()] || 0;
-            // r.target.classList.remove("flash-green", "flash-red"); // void r.target.offsetWidth;
-            // if (newNum && oldNum) {
-              // if (newNum > oldNum) {
-                // r.target.classList.add("flash-green");
-              // } else if (newNum < oldNum) {
-                // r.target.classList.add("flash-red");
-              // }
+  // const grid1 = document.querySelectorAll("div.ptf-positions table td span[fix="31"] span");
+  const grid2 = document.querySelectorAll('div.ptf-positions table td div[fix="84"] span, div.ptf-positions table td div[fix="86"] span');
+  if (/*grid1 &&*/ grid2) {
+    for (const r of records) {
+      // grid1.forEach((td) => {
+        // if (td === r.target) {
+          // var num = (r.addedNodes[0].data || '').replace('C', '').replace('F', '');
+          // if (!Number(num)) return;
+          // var newNum = parseFloat(num);
+          // var oldNum = prices[r.target.parentNode.parentNode.parentNode.querySelectorAll('td')[1].innerText.trim()] || 0;
+          // r.target.classList.remove("flash-green", "flash-red"); // void r.target.offsetWidth;
+          // if (newNum && oldNum) {
+            // if (newNum > oldNum) {
+              // r.target.classList.add("flash-green");
+            // } else if (newNum < oldNum) {
+              // r.target.classList.add("flash-red");
             // }
-            // prices[r.target.parentNode.parentNode.parentNode.querySelectorAll('td')[1].innerText.trim()] = newNum;
           // }
-        // })
-        grid2.forEach((td) => {
-          if (td === r.target) {
-            var num = r.addedNodes[0].data.replace('C', '').replace('F', '');
-            if (!Number(num)) return;
-            // r.target.classList.remove("flash-green", "flash-red");
-            r.target.parentNode.classList.remove("fade-opacity");
-            // void r.target.offsetWidth;
+          // prices[r.target.parentNode.parentNode.parentNode.querySelectorAll('td')[1].innerText.trim()] = newNum;
+        // }
+      // })
+      grid2.forEach((td) => {
+        if (td === r.target) {
+          var num = r.addedNodes[0].data.replace('C', '').replace('F', '');
+          if (!Number(num)) return;
+          // r.target.classList.remove("flash-green", "flash-red");
+          r.target.parentNode.classList.remove("fade-opacity");
+          // void r.target.offsetWidth;
 
-            // if (r.addedNodes[0].data && r.removedNodes[0].data) {
-              // if (r.addedNodes[0].data > r.removedNodes[0].data) {
-                // r.target.classList.add("flash-green");
-              // } else if (r.addedNodes[0].data < r.removedNodes[0].data) {
-                // r.target.classList.add("flash-red");
-              // }
+          // if (r.addedNodes[0].data && r.removedNodes[0].data) {
+            // if (r.addedNodes[0].data > r.removedNodes[0].data) {
+              // r.target.classList.add("flash-green");
+            // } else if (r.addedNodes[0].data < r.removedNodes[0].data) {
+              // r.target.classList.add("flash-red");
             // }
+          // }
 
-            r.target.parentNode.style.opacity = 0.9;
-            requestAnimationFrame(() => {
-              r.target.parentNode.classList.add("fade-opacity");
-            });
+          r.target.parentNode.style.opacity = 0.9;
+          requestAnimationFrame(() => {
+            r.target.parentNode.classList.add("fade-opacity");
+          });
 
-          }
-        })
-      }
+        }
+      })
     }
   }
 
-  if (!document.querySelector('textarea#calcNotes')) {
+  if (!document.querySelector('textarea#calcNotes') && (document.querySelectorAll('div.ptf-positions table th').length > 20 || (document.querySelector('h1') && document.querySelector('h1').innerText == 'Orders & Trades'))) {
     clearTimeout(timeOut2);
     timeOut2 = setTimeout(async () => {
       if (!document.querySelector('textarea#calcNotes')) {
@@ -241,6 +238,7 @@ async function enhanceTickers(records) {
               e.preventDefault();
               var next_trade = {};
               next_trade['copypaste'] = tr.innerText.trim();
+              console.log(next_trade);
               await promiseWrapper(next_trade, setStorage)
               window.location.assign('#/dashboard/positions');
             });
@@ -355,33 +353,18 @@ async function enhanceTickers(records) {
             // else b.remove();
           })
 
-          var ith = 2;
-          document.querySelectorAll('div.ptf-positions table th').forEach((th) => {
-            if (th.innerText.trim() == 'ASK') {col1 = ith;}
-            else if (th.innerText.trim() == 'LAST') {col2 = ith;}
-            else if (th.innerText.trim() == 'BID') {col3 = ith;}
-            else if (th.innerText.trim() == 'AVG PRICE') {col0 = ith;}
-            else if (th.innerText.trim() == 'BID SIZE') {col4 = ith;}
-            else if (th.innerText.trim() == 'ASK SIZE') {col5 = ith;}
-            else if (th.innerText.trim() == 'MARKET VALUE') {col6 = ith;}
-            else if (th.innerText.trim() == '% OF NET LIQ') {col7 = ith;}
-            else if (th.innerText.trim() == 'UNREALIZED P&L %') {col8 = ith;}
-            ith++;
-          });
           const styleEl = document.createElement("style");
           styleEl.type = 'text/css';
           styleEl.id = 'flashprices';
           document.head.appendChild(styleEl);
-          if (col1 && col2 && col3) {
-            // styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col2+") span {transition: color 1s ease;}", styleEl.sheet.cssRules.length);
-            styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col1+") div, div.ptf-positions table td:nth-child("+col3+") div {opacity:0.6;}", styleEl.sheet.cssRules.length);
-          }
-          // if (col4 && col5 && col6 && col7 && col8 && col0) {
-          if (col1 && col2 && col3) {
-            styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col4+") div, div.ptf-positions table td:nth-child("+col5+") div{color:#3392ff;}", styleEl.sheet.cssRules.length);
-            // styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col6+") div, div.ptf-positions table td:nth-child("+col7+"), div.ptf-positions table td:nth-child("+col8+") span , div.ptf-positions table td:nth-child("+col0+") span {color:#bdcc70;}", styleEl.sheet.cssRules.length);
-            styleEl.sheet.insertRule("div.ptf-positions table td:nth-child("+col1+") div, div.ptf-positions table td:nth-child("+col2+") span, div.ptf-positions table td:nth-child("+col3+") div{color:#bdcc70;}", styleEl.sheet.cssRules.length);
-          }
+          // styleEl.sheet.insertRule("div.ptf-positions table td span[fix="31"] span {transition: color 1s ease;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7288"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7639"] span {color:#939393;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 101px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td span[fix="31"] span, div.ptf-positions table td div[fix="84"] {color:#bdcc70;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", styleEl.sheet.cssRules.length);
@@ -394,19 +377,20 @@ async function enhanceTickers(records) {
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -20px;width: 65%;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.side-panel {max-width: 328px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.sl-search-results {zoom: 1.2;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 101px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(4), div.ptf-positions table col:nth-child("+col4+") , div.ptf-positions table col:nth-child("+col5+") {width: 80px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child("+col1+"), div.ptf-positions table col:nth-child("+col2+") , div.ptf-positions table col:nth-child("+col3+") {width: 100px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7743"] {color: #cd8602;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7681"] span,div.ptf-positions table td div[fix="7678"] span,div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
+          // styleEl.sheet.insertRule(".order-price-info .realtime-data-container {font-size: 19px;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule(".flash-green {color: #00c853;animation: flashGreen 0.8s ease;}", styleEl.sheet.cssRules.length);
@@ -506,3 +490,5 @@ observer.observe(document.body, { childList: true, subtree: true });
 // setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(document.querySelector('#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span').innerText)));},10000);
 
 // setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(document.querySelector('td[conid="67889930"] span').innerText + " " + parseInt(document.querySelector('tr:has(td[conid="67889930"]) td:nth-child(7)').innerText.replace("C", ""))))},10000);
+
+// localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
