@@ -373,8 +373,9 @@ async function enhanceTickers(records) {
           // styleEl.sheet.insertRule("div.ptf-positions table td span[fix="31"] span {transition: color 1s ease;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7288"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7639"] span {color:#939393;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 101px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td span[fix="31"] span, div.ptf-positions table td div[fix="84"] {color:#bdcc70;}', styleEl.sheet.cssRules.length);
@@ -382,6 +383,8 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-positions td {font-size: 110%;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', styleEl.sheet.cssRules.length);
           /*td.bg15-accent*/styleEl.sheet.insertRule('#cp-header div.one-head div.one-head-menu > button:nth-child(1), #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, div.pane-subactions > div:nth-child(4), div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, button.ptf-positions__expand-collapse-btn {display: none;}', styleEl.sheet.cssRules.length);
