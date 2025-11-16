@@ -296,6 +296,19 @@ async function enhanceTickers(records) {
         }
 
         if (document.querySelector('.tws-shortcuts button:last-of-type')) {
+          document.querySelector('.tws-shortcuts button .start-8').innerText = "";
+
+          const map = document.createElement("button");
+          map.type = 'button';
+          map.innerHTML = "<span>Map</span>";
+          map.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
+          document.querySelector('.tws-shortcuts button:last-of-type').after(map);
+          map.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            window.location.assign('https://finviz.com/map.ashx?t=sec');
+          });
+
           const trades = document.createElement("button");
           trades.type = 'button';
           trades.innerHTML = "<span>Trades</span>";
@@ -392,11 +405,11 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 604px;width: 325px;margin: 0px;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 777px;width: 325px;margin: 0px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule(".order-price-info .realtime-data-container {font-size: 19px;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", styleEl.sheet.cssRules.length);
