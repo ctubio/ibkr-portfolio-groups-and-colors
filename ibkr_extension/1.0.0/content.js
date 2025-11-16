@@ -391,6 +391,7 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 604px;width: 325px;margin: 0px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", styleEl.sheet.cssRules.length);
