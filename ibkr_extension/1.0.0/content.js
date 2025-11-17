@@ -377,7 +377,7 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table col:nth-child(3) {width: 101px!important;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule('div.ptf-positions table col:nth-child(3), div.ptf-positions table col:nth-child(8){/*8!*/width: 100px!important;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td span[fix="31"] span, div.ptf-positions table td div[fix="84"] {color:#bdcc70;}', styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
@@ -403,7 +403,7 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 966px;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
@@ -412,7 +412,7 @@ async function enhanceTickers(records) {
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", styleEl.sheet.cssRules.length);
           styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", styleEl.sheet.cssRules.length);
+          styleEl.sheet.insertRule("div.ptf-positions > div.flex-fixed span.end-4, .ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule(".order-price-info .realtime-data-container {font-size: 19px;}", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", styleEl.sheet.cssRules.length);
           // styleEl.sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", styleEl.sheet.cssRules.length);
