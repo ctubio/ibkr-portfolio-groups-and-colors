@@ -52,7 +52,7 @@ async function setColorForTicker(conid, ticker) {
   applyColorForTicker(conid, data[ticker]);
 }
 
-async function setDisplayForTicker(conid, ticker, store) {
+async function setDisplayForTicker(conid, ticker) {
   var data = await promiseWrapper(ticker, getStorage);
 
   var display = "table-row-group";
@@ -101,7 +101,7 @@ async function setNextDisplayForTicker(conid, ticker) {
 
   await promiseWrapper(next_data, setStorage)
 
-  await setDisplayForTicker(conid, ticker, true);
+  await setDisplayForTicker(conid, ticker);
 
   await enhanceCounter();
 }
@@ -177,7 +177,7 @@ const mutation = async (records) => {
         span.parentNode.parentNode.parentNode.dataset.enhanced = "true";
 
         await setColorForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_color");
-        await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view", true);
+        await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
 
         clearTimeout(timeOut);
         timeOut = setTimeout(async () => {
@@ -295,7 +295,7 @@ const groups = async (target) => {
   document.querySelectorAll('td[conid][data-enhanced] span[dir]').forEach(async (span) => {
     const ticker = span.innerText.trim();
     if (!ticker) return;
-    await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view", false);
+    await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
   });
 };
 
