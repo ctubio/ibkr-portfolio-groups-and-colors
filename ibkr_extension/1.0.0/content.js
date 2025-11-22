@@ -176,15 +176,6 @@ async function enhanceTickers(records) {
       var meConid = r.target.parentNode.parentNode.parentNode.querySelector("td[conid]").attributes.conid.value;
       if (!meConid) continue;
 
-      if (!document.querySelector('style#colorSizes_' + meConid)) {
-        const styleElconid = document.createElement("style");
-        styleElconid.type = 'text/css';
-        styleElconid.id = 'colorSizes_' + meConid;
-        document.head.appendChild(styleElconid);
-      }
-      var sheetconid = document.querySelector('style#colorSizes_' + meConid).sheet;
-      if (sheetconid.cssRules.length)
-        sheetconid.deleteRule(0);
       var color = "";
       if (meNum == otherNum) {
         color = "inherit";
@@ -193,8 +184,8 @@ async function enhanceTickers(records) {
       } else {
         color = "#e62333";
       }
-      sheetconid.insertRule('div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="86"], div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td span[fix="31"] span, div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="84"] {color:'+color+'}', 0);
 
+      applyCssRule(meConid, 3, 'div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="86"], div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td span[fix="31"] span, div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="84"] {color:'+color+'}');
       continue
     }
 
@@ -309,17 +300,6 @@ async function enhanceTickers(records) {
             document.querySelector('.tws-shortcuts button .start-8').innerText = "";
           }
 
-          // const map = document.createElement("button");
-          // map.type = 'button';
-          // map.innerHTML = "<span>Map</span>";
-          // map.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
-          // document.querySelector('.tws-shortcuts button:last-of-type').after(map);
-          // map.addEventListener("click", (e) => {
-            // e.stopPropagation();
-            // e.preventDefault();
-            // window.location.assign('https://finviz.com/map.ashx?t=sec');
-          // });
-
           const trades = document.createElement("button");
           trades.type = 'button';
           trades.innerHTML = "<span>Trades</span>";
@@ -330,6 +310,29 @@ async function enhanceTickers(records) {
             e.preventDefault();
             window.location.assign('#/orders/trades');
           });
+
+          const map = document.createElement("button");
+          map.type = 'button';
+          map.innerHTML = "<span>Map</span>";
+          map.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
+          document.querySelector('.tws-shortcuts button:last-of-type').after(map);
+          map.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            window.open('https://finviz.com/map.ashx?t=sec', '_blank');
+          });
+
+          const calendar = document.createElement("button");
+          calendar.type = 'button';
+          calendar.innerHTML = "<span>Calendar</span>";
+          calendar.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
+          document.querySelector('.tws-shortcuts button:last-of-type').after(calendar);
+          calendar.addEventListener("click", (e) => {
+            e.stopPropagation();
+            e.preventDefault();
+            window.open('https://www.investing.com/dividends-calendar/', '_blank');
+          });
+
         }
 
         if (!document.querySelector('style#flashprices')) {
@@ -355,26 +358,6 @@ async function enhanceTickers(records) {
                 window.location.assign('#/orders');
               });
             } else b.remove();
-            // if (document.querySelector('.tws-shortcuts button:last-of-type') && b.classList.contains('nav-item')) {
-              // console.log("REMOVE", b)
-              // b.classList.remove("nav-item", "link");
-              // b.ariaLabel = "";
-              // b.className += " " + document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
-              // b.style = "color:transparent;width:0px;border-color:transparent!important;z-index:30;";
-              // document.querySelector('.tws-shortcuts button:last-of-type').after(b);
-              // const trades = document.createElement("button");
-              // trades.type = 'button';
-              // trades.style = 'left:-34px;z-index:32;';
-              // trades.innerHTML = b.innerHTML;
-              // trades.className = b.className;
-              // document.querySelector('.tws-shortcuts button:last-of-type').after(trades);
-              // trades.addEventListener("click", (e) => {
-                // e.stopPropagation();
-                // e.preventDefault();
-                // window.location.assign('#/orders/trades');
-              // });
-            // }
-            // else b.remove();
           })
 
           const styleEl = document.createElement("style");
@@ -512,20 +495,39 @@ const observer = new MutationObserver((records) => {
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
-// const utterance = new SpeechSynthesisUtterance("Welcome to this tutorial!");
+var speakInterval = setInterval(async ()=>{
+  const speakSelector = '#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span';
+  const netAmount = document.querySelector(speakSelector);
+  if (netAmount) {
+    clearInterval(speakInterval);
 
-// // Select a voice
-// const voices = speechSynthesis.getVoices();
-// utterance.voice = voices[0]; // Choose a specific voice
+    let sheet = getStyleForTicker('speakNet');
+    applyCssRule('speakNet', 0, speakSelector+' {cursor: pointer;}');
 
-// // Speak the text
-// speechSynthesis.speak(new SpeechSynthesisUtterance("ACN"));
+    let voiceInterval;
+    const speaker = async (mod) => {
+      let data = await promiseWrapper('speakNet', getStorage);
+      if (!data['speakNet']) data['speakNet'] = 0;
+      if (mod) {
+        data['speakNet'] = +!data['speakNet'];
+        await promiseWrapper(data, setStorage);
+      }
+      if (data['speakNet']) {
+        voiceInterval = setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(netAmount.innerText.replace(",",""))));},21000);
+        applyCssRule('speakNet', 1, speakSelector+'::before {content: "🕪";font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+      } else {
+        clearInterval(voiceInterval);
+        applyCssRule('speakNet', 1, speakSelector+'::before {content: "";}');
+      }
+    };
+    netAmount.addEventListener("click", async (e) => {
+      await speaker(true);
+    });
+    await speaker(false);
+  }
+}, 3000);
 
-// setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(document.querySelector('#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span').innerText)));},10000);
-
-// setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(document.querySelector('td[conid="67889930"] span').innerText + " " + parseInt(document.querySelector('tr:has(td[conid="67889930"]) td:nth-child(7)').innerText.replace("C", ""))))},10000);
 
 // localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
-
 // chrome.storage.local.get(null, (data) => console.log(data))
 // chrome.storage.local.set({})
