@@ -107,15 +107,18 @@ async function setNextDisplayForTicker(conid, ticker) {
 }
 
 async function enhanceCounter() {
+  const group = document.querySelector('div.ptf-positions h3');
+  if (group && group.innerText.split(" ").length == 2) {
+    group.innerHTML = group.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView" style="font-size: 16px;font-weight: normal;"></span>';
+  }
+
   var collapsed = total = 0;
   var timeout;
 
   var view = await promiseWrapper('viewMode', getStorage);
   if (!view['viewMode']) view['viewMode'] = 0;
 
-  document.querySelectorAll('td[conid]').forEach(async (td) => {
-    const span = td.querySelector('span.text-semibold');
-    if (!span) return;
+  document.querySelectorAll('td[conid] span[dir]').forEach(async (span) => {
     const ticker = span.innerText.trim();
     if (!ticker) return;
 
@@ -163,12 +166,44 @@ function transformCopyPaste(val) {
   return '';
 }
 
-var timeOut/*, timeOut2*/;
-// var prices = {};
-async function enhanceTickers(records) {
+var timeOut;
+const mutation = async (records) => {
   for (const r of records) {
     if (!r.addedNodes[0]) continue;
-    if (r.target.parentNode && r.target.parentNode.attributes.fix && ['85','88'].indexOf(r.target.parentNode.attributes.fix.value) > -1) {
+    if (r.addedNodes[0].nodeName == "TBODY" && r.target.nodeName == "TABLE" && r.target.id == "cp-ptf-positions-table0") {
+      document.querySelectorAll('td[conid]:not([data-enhanced]) span[dir]').forEach(async (span) => {
+        const ticker = span.innerText.trim();
+        if (!ticker) return;
+        span.parentNode.parentNode.parentNode.dataset.enhanced = "true";
+
+        await setColorForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_color");
+        await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view", true);
+
+        clearTimeout(timeOut);
+        timeOut = setTimeout(async () => {
+          await enhanceCounter();
+        }, 400);
+
+        span.addEventListener("click", async (e) => {
+          e.stopPropagation();
+          e.preventDefault();
+          window.getSelection().removeAllRanges();
+          const ticker = e.target.innerText.trim();
+          if (!ticker) return;
+          if (e.detail === 1) {
+            timeOut = setTimeout(async () => {
+              await setNextColorForTicker(e.target.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_color");
+            }, 400);
+          }
+          if (e.detail === 2) {
+            clearTimeout(timeOut);
+            await setNextDisplayForTicker(e.target.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
+          }
+        });
+      });
+    }
+
+    else if (r.target.parentNode && r.target.parentNode.attributes.fix && ['85','88'].indexOf(r.target.parentNode.attributes.fix.value) > -1) {
       var me = r.target.parentNode.attributes.fix.value;
       var other = me == '85' ? '88' : '85';
       var meNum = parseInt(r.addedNodes[0].data.replace(",","") || "0");
@@ -212,80 +247,7 @@ async function enhanceTickers(records) {
       continue
     }
   }
-
-  if (!document.querySelector('span#toggleCustomView')) {
-    const div = document.querySelector('div.ptf-positions');
-    if (!div) return
-
-    const h3 = div.firstChild.firstChild.firstChild;
-
-    if (!h3 || h3.innerText.split(" ").slice(0,2).join(" ") != "Your Holdings") return;
-
-    h3.innerHTML = h3.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView" style="font-size: 16px;font-weight: normal;cursor:pointer;"></span>';
-
-    document.querySelector('span#toggleCustomView').addEventListener("click", async (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.getSelection().removeAllRanges()
-
-      var view = await promiseWrapper('viewMode', getStorage);
-      if (!view['viewMode']) view['viewMode'] = 0;
-
-      view['viewMode'] = (view['viewMode'] + 1) % 3;
-
-      setTimeout(async () => { await enhanceCounter(); }, 1);
-
-      await promiseWrapper(view, setStorage)
-
-      document.querySelectorAll('td[conid]').forEach(async (td) => {
-        const span = td.querySelector('span.text-semibold');
-        if (!span || !td.dataset.enhanced) return;
-        const ticker = span.innerText.trim();
-        if (!ticker) return;
-        await setDisplayForTicker(td.attributes.conid.value, ticker + "_view", false);
-      });
-    });
-  }
-
-  document.querySelectorAll('td[conid]').forEach(async (td) => {
-    const span = td.querySelector('span.text-semibold');
-    if (!span || td.dataset.enhanced) return;
-
-    const ticker = span.innerText.trim();
-    if (!ticker) return;
-    td.dataset.enhanced = "true";
-
-    await setColorForTicker(td.attributes.conid.value, ticker + "_color");
-    await setDisplayForTicker(td.attributes.conid.value, ticker + "_view", true);
-
-    clearTimeout(timeOut);
-    timeOut = setTimeout(async () => {
-      await enhanceCounter();
-    }, 400);
-
-    span.addEventListener("click", async (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.getSelection().removeAllRanges();
-      const _td = e.target.parentNode.parentNode.parentNode;
-      const _ticker = e.target.innerText.trim();
-      if (e.detail === 1) {
-        timeOut = setTimeout(async () => {
-          await setNextColorForTicker(_td.attributes.conid.value, _ticker + "_color");
-        }, 400);
-      }
-      if (e.detail === 2) {
-        clearTimeout(timeOut);
-        await setNextDisplayForTicker(_td.attributes.conid.value, _ticker + "_view");
-      }
-    });
-  });
 }
-
-const observer = new MutationObserver((records) => {
-  enhanceTickers(records);
-});
-observer.observe(document.body, { childList: true, subtree: true });
 
 var speakerInterval;
 const speaker = async (target) => {
@@ -313,6 +275,28 @@ const speaker = async (target) => {
     clearInterval(speakerInterval);
     applyCssRule('speakNet', 1, speakSelector+'::before {content: "";}');
   }
+};
+
+const groups = async (target) => {
+  const group = document.querySelector('div.ptf-positions h3');
+  if (!group || (target != group && !group.contains(target))) return
+
+  window.getSelection().removeAllRanges()
+
+  var view = await promiseWrapper('viewMode', getStorage);
+  if (!view['viewMode']) view['viewMode'] = 0;
+
+  view['viewMode'] = (view['viewMode'] + 1) % 3;
+
+  setTimeout(async () => { await enhanceCounter(); }, 1);
+
+  await promiseWrapper(view, setStorage)
+
+  document.querySelectorAll('td[conid][data-enhanced] span[dir]').forEach(async (span) => {
+    const ticker = span.innerText.trim();
+    if (!ticker) return;
+    await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view", false);
+  });
 };
 
 const chart = (target) => {
@@ -468,7 +452,8 @@ const css = () => {
   sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
   sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
   sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", sheet.cssRules.length);
-  sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions h3, .quote-mini-chart .highcharts-container {cursor:pointer;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions h3 {display:inline;}", sheet.cssRules.length);
   sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
   sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
   sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 777px;width: 325px;margin: 0px;}", sheet.cssRules.length);
@@ -487,12 +472,17 @@ const css = () => {
   sheet.insertRule('div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
 };
 
+const observer = new MutationObserver((records) => {
+  mutation(records);
+});
+observer.observe(document.body, { childList: true, subtree: true });
+
 window.addEventListener("load", async (e) => {
   css();
+  links();
   await speaker();
   await notes();
   await copy();
-  links();
 });
 
 window.navigation.addEventListener("navigate", async () => {
@@ -508,9 +498,9 @@ document.addEventListener("click", async (e) => {
   // console.log(e);
   await speaker(e.target);
   await chart(e.target);
+  await groups(e.target);
   orders(e.target);
+  // localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
+  // chrome.storage.local.get(null, (data) => console.log(data))
+  // chrome.storage.local.set({})
 });
-
-// localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
-// chrome.storage.local.get(null, (data) => console.log(data))
-// chrome.storage.local.set({})
