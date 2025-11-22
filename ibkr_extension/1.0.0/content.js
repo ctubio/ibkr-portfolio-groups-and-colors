@@ -16,7 +16,7 @@ function getStorage(collection, resolve) {
     chrome.storage.local.get(collection, (data) => resolve(data))
 }
 
-function getStyleForTicker(conid) {
+function makeStyle(conid) {
   if (!document.querySelector('style#rules_' + conid)) {
     const styleEl = document.createElement("style");
     styleEl.type = 'text/css';
@@ -28,7 +28,7 @@ function getStyleForTicker(conid) {
 }
 
 function applyCssRule(conid, index, rule) {
-  const sheet = getStyleForTicker(conid);
+  const sheet = makeStyle(conid);
   if (sheet.cssRules.length > index)
     sheet.deleteRule(index);
   sheet.insertRule(rule, index);
@@ -163,7 +163,7 @@ function transformCopyPaste(val) {
   return '';
 }
 
-var timeOut, timeOut2;
+var timeOut/*, timeOut2*/;
 // var prices = {};
 async function enhanceTickers(records) {
   for (const r of records) {
@@ -211,213 +211,6 @@ async function enhanceTickers(records) {
 
       continue
     }
-  }
-
-  var chart = document.querySelector('.quote-mini-chart .highcharts-container');
-  if (chart && !chart.dataset.enhanced) {
-    chart.dataset.enhanced = "true";
-    chart.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      var ticker = document.querySelector('.quote-symbol div');
-      if (ticker) {
-        window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", "width=1500,height=400,top=400,left=600")
-      }
-    });
-  }
-
-  if (!document.querySelector('textarea#calcNotes') && (document.querySelectorAll('div.ptf-positions table th').length > 20 || (document.querySelector('h1') && document.querySelector('h1').innerText == 'Orders & Trades'))) {
-    clearTimeout(timeOut2);
-    timeOut2 = setTimeout(async () => {
-      if (!document.querySelector('textarea#calcNotes')) {
-
-        if (document.querySelector('h1') && document.querySelector('h1').innerText == 'Orders & Trades') {
-          document.querySelectorAll('table tr._tbgr').forEach(async (tr) => {
-            tr.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              e.preventDefault();
-              var next_trade = {};
-              next_trade['copypaste'] = tr.innerText.trim();
-              console.log(next_trade);
-              await promiseWrapper(next_trade, setStorage)
-              window.location.assign('#/dashboard/positions');
-            });
-          });
-        }
-
-        const sdiv = document.querySelector('div.tws-shortcuts');
-        if (!sdiv) return
-
-        var data = await promiseWrapper('calcNotes', getStorage);
-        if (!data['calcNotes']) data['calcNotes'] = '';
-
-        const text = document.createElement("textarea");
-        text.id = 'calcNotes';
-        text.spellcheck = false;
-        text.value = data['calcNotes'];
-
-        var copypaste = await promiseWrapper('copypaste', getStorage);
-        if (!copypaste['copypaste']) copypaste['copypaste'] = '';
-        if (copypaste['copypaste'].length) {
-          if (!text.value || text.value[text.value.length-1] != "\n") text.value += "\n";
-          const transform = transformCopyPaste(text.value+copypaste['copypaste']);
-          if (transform) {
-            text.value = transform .trim()+ "\n";
-            var next_data = {};
-            next_data['calcNotes'] = text.value;
-            await promiseWrapper(next_data, setStorage)
-            var next_trade = {};
-            next_trade['copypaste'] = '';
-            await promiseWrapper(next_trade, setStorage)
-          }
-        }
-
-        text.style = 'width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
-        sdiv.after(text);
-        text.addEventListener("keyup", async (e) => {
-          var val = e.target.value;
-          // if (val.indexOf('Bought') != val.indexOf('Filled')) {
-            // const transform = transformCopyPaste(val);
-            // if (transform) {
-              // e.target.value = val = transform;
-            // }
-          // }
-          var next_data = {};
-          next_data['calcNotes'] = val;
-          await promiseWrapper(next_data, setStorage)
-        })
-
-        if (document.querySelector('.account-alias__container__account-values')) {
-          document.querySelectorAll('.account-alias__container__account-values span').forEach((span) => {
-            if (span.className.indexOf('numeric')==-1)
-              span.style.fontSize = '1.825rem';
-            // span.style.fontWeight = '600';
-          });
-        }
-
-        if (document.querySelector('.tws-shortcuts button:last-of-type')) {
-          if (document.querySelector('.tws-shortcuts button .start-8')) {
-            document.querySelector('.tws-shortcuts button .start-8').innerText = "";
-          }
-
-          const trades = document.createElement("button");
-          trades.type = 'button';
-          trades.innerHTML = "<span>Trades</span>";
-          trades.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
-          document.querySelector('.tws-shortcuts button:last-of-type').after(trades);
-          trades.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            window.location.assign('#/orders/trades');
-          });
-
-          const map = document.createElement("button");
-          map.type = 'button';
-          map.innerHTML = "<span>Map</span>";
-          map.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
-          document.querySelector('.tws-shortcuts button:last-of-type').after(map);
-          map.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            window.open('https://finviz.com/map.ashx?t=sec', '_blank');
-          });
-
-          const calendar = document.createElement("button");
-          calendar.type = 'button';
-          calendar.innerHTML = "<span>Calendar</span>";
-          calendar.className = document.querySelector('.tws-shortcuts button:last-of-type').className.replace(' tws-skeleton', '');
-          document.querySelector('.tws-shortcuts button:last-of-type').after(calendar);
-          calendar.addEventListener("click", (e) => {
-            e.stopPropagation();
-            e.preventDefault();
-            window.open('https://www.investing.com/dividends-calendar/', '_blank');
-          });
-
-        }
-
-        if (!document.querySelector('style#flashprices')) {
-          document.querySelectorAll('div.one-head-menu button').forEach((b) => {
-            if (b.innerText.trim() == 'IBKR ForecastTrader') b.remove();
-            else if (b.innerText.trim() == 'Get Help') b.remove();
-          })
-          if (document.querySelector('div.feedbackApp')) {
-            document.querySelector('div.feedbackApp').closest('section').remove()
-          }
-          document.querySelectorAll('.bar3-logo, footer, div.nav-container button[aria-label="Research"], div.nav-container button[aria-label="Transfer & Pay"], div.nav-container button[aria-label="Education"], div.nav-container button[aria-label="Performance & Reports"]').forEach((b) => {
-            b.remove();
-          })
-
-          document.querySelectorAll('div.nav-container button[aria-label="Trade"]').forEach((b) => {
-            if (b.classList.contains('nav-item')) {
-              b.style.position = "relative";
-              b.style.left = "212px";
-              b.style.fontSize = "0px";
-              b.addEventListener("click", (e) => {
-                e.stopPropagation();
-                e.preventDefault();
-                window.location.assign('#/orders');
-              });
-            } else b.remove();
-          })
-
-          const styleEl = document.createElement("style");
-          styleEl.type = 'text/css';
-          styleEl.id = 'flashprices';
-          document.head.appendChild(styleEl);
-          // styleEl.sheet.insertRule("div.ptf-positions table td span[fix="31"] span {transition: color 1s ease;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table col:nth-child(3), div.ptf-positions table col:nth-child(8){/*8!*/width: 100px!important;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-positions td {font-size: 110%;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('#cp-header div.one-head div.one-head-menu > button:nth-child(1), #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, div.pane-subactions > div:nth-child(4), div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, button.ptf-positions__expand-collapse-btn {display: none;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', styleEl.sheet.cssRules.length);
-          /*td.bg15-accent*/styleEl.sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.side-panel {max-width: 328px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.sl-search-results {zoom: 1.2;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7681"] span,div.ptf-positions table td div[fix="7678"] span,div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('div.ptf-positions table td div[fix="7290"] span,div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 777px;width: 325px;margin: 0px;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("div.ptf-positions > div.flex-fixed span.end-4, .ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", styleEl.sheet.cssRules.length);
-          // styleEl.sheet.insertRule(".order-price-info .realtime-data-container {font-size: 19px;}", styleEl.sheet.cssRules.length);
-          // styleEl.sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", styleEl.sheet.cssRules.length);
-          // styleEl.sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", styleEl.sheet.cssRules.length);
-          // styleEl.sheet.insertRule(".flash-green {color: #00c853;animation: flashGreen 0.8s ease;}", styleEl.sheet.cssRules.length);
-          // styleEl.sheet.insertRule(".flash-red {color: #d50000;animation: flashRed 0.8s ease;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule(".fade-opacity {animation: fadeOpacity 21s linear forwards;}", styleEl.sheet.cssRules.length);
-          styleEl.sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', styleEl.sheet.cssRules.length);
-        }
-      }
-    }, 300);
   }
 
   if (!document.querySelector('span#toggleCustomView')) {
@@ -487,7 +280,6 @@ async function enhanceTickers(records) {
       }
     });
   });
-
 }
 
 const observer = new MutationObserver((records) => {
@@ -495,38 +287,229 @@ const observer = new MutationObserver((records) => {
 });
 observer.observe(document.body, { childList: true, subtree: true });
 
-var speakInterval = setInterval(async ()=>{
+var speakerInterval;
+const speaker = async (target) => {
   const speakSelector = '#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span';
-  const netAmount = document.querySelector(speakSelector);
-  if (netAmount) {
-    clearInterval(speakInterval);
+  if (target && target != document.querySelector(speakSelector)) return
 
-    let sheet = getStyleForTicker('speakNet');
-    applyCssRule('speakNet', 0, speakSelector+' {cursor: pointer;}');
+  var data = await promiseWrapper('speakNet', getStorage);
+  if (!data['speakNet']) data['speakNet'] = 0;
 
-    let voiceInterval;
-    const speaker = async (mod) => {
-      let data = await promiseWrapper('speakNet', getStorage);
-      if (!data['speakNet']) data['speakNet'] = 0;
-      if (mod) {
-        data['speakNet'] = +!data['speakNet'];
-        await promiseWrapper(data, setStorage);
-      }
-      if (data['speakNet']) {
-        voiceInterval = setInterval(()=>{window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(netAmount.innerText.replace(",",""))));},21000);
-        applyCssRule('speakNet', 1, speakSelector+'::before {content: "🕪";font-size: 19px;vertical-align: middle;padding-right: 21px;}');
-      } else {
-        clearInterval(voiceInterval);
-        applyCssRule('speakNet', 1, speakSelector+'::before {content: "";}');
-      }
-    };
-    netAmount.addEventListener("click", async (e) => {
-      await speaker(true);
-    });
-    await speaker(false);
+  if (target) {
+    data['speakNet'] = +!data['speakNet'];
+    await promiseWrapper(data, setStorage);
+  } else {
+    makeStyle('speakNet');
+    applyCssRule('speakNet', 0, speakSelector+' {cursor: pointer;font-size:1.825rem;}');
   }
-}, 3000);
+  if (data['speakNet']) {
+    speakerInterval = setInterval(()=>{
+      const netAmount = document.querySelector(speakSelector);
+      if (!netAmount) return;
+      window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(netAmount.innerText.replace(",",""))));
+    }, 21000);
+    applyCssRule('speakNet', 1, speakSelector+'::before {content: "🕪";font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+  } else {
+    clearInterval(speakerInterval);
+    applyCssRule('speakNet', 1, speakSelector+'::before {content: "";}');
+  }
+};
 
+const chart = (target) => {
+  const highchart = document.querySelector('.quote-mini-chart .highcharts-container');
+  if (!target || !highchart || !highchart.contains(target)) return
+  const ticker = document.querySelector('.quote-symbol div');
+  if (ticker) {
+    window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", "width=1500,height=400,top=400,left=600");
+  }
+};
+
+const orders = (target) => {
+  const dot = document.querySelector('div.nav-container button[aria-label="Trade"].nav-item > span > span');
+  if (!target || !dot || target != dot) return
+  window.location.assign('#/orders');
+};
+
+const copy = async () => {
+  var trs = document.querySelectorAll('._tbscomfortable table tr._tbgr');
+  if (!trs.length) {
+    if (location.href.indexOf('/orders/trades') > -1)
+      setTimeout(copy, 1000);
+  } else {
+    trs.forEach(async (tr) => {
+      tr.addEventListener("click", async (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        var next_trade = {};
+        next_trade['copypaste'] = tr.innerText.trim();
+        console.log(next_trade);
+        await promiseWrapper(next_trade, setStorage)
+        window.location.assign('#/dashboard/positions');
+      });
+    });
+  }
+};
+
+const notes = async () => {
+  const sdiv = document.querySelector('div.tws-shortcuts');
+  if (!sdiv) {
+    if (location.href.indexOf('/dashboard') > -1)
+      setTimeout(notes, 3000);
+  } else if (!document.querySelector('textarea#calcNotes')) {
+    var data = await promiseWrapper('calcNotes', getStorage);
+    if (!data['calcNotes']) data['calcNotes'] = '';
+
+    const text = document.createElement("textarea");
+    text.id = 'calcNotes';
+    text.spellcheck = false;
+    text.style = 'width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
+    text.value = data['calcNotes'];
+
+    var copypaste = await promiseWrapper('copypaste', getStorage);
+    if (!copypaste['copypaste']) copypaste['copypaste'] = '';
+    if (copypaste['copypaste'].length) {
+      if (!text.value || text.value[text.value.length-1] != "\n") text.value += "\n";
+      const transform = transformCopyPaste(text.value+copypaste['copypaste']);
+      if (transform) {
+        text.value = transform .trim()+ "\n";
+        var next_data = {};
+        next_data['calcNotes'] = text.value;
+        await promiseWrapper(next_data, setStorage)
+        var next_trade = {};
+        next_trade['copypaste'] = '';
+        await promiseWrapper(next_trade, setStorage)
+      }
+    }
+
+    sdiv.after(text);
+    text.addEventListener("keyup", async (e) => {
+      var val = e.target.value;
+      var next_data = {};
+      next_data['calcNotes'] = val;
+      await promiseWrapper(next_data, setStorage)
+    })
+  }
+};
+
+const links = () => {
+  const button = document.querySelector('.tws-shortcuts button:last-of-type');
+  if (!button) {
+    setTimeout(links, 3000);
+  } else if (button.innerText != "Calendar") {
+    const calendar = document.createElement("button");
+    calendar.type = 'button';
+    calendar.innerHTML = "<span>Calendar</span>";
+    calendar.className = button.className.replace(' tws-skeleton', '');
+    button.after(calendar);
+    calendar.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.open('https://www.investing.com/dividends-calendar/', '_blank', "width=1500,height=800,top=200,left=600");
+    });
+
+    const map = document.createElement("button");
+    map.type = 'button';
+    map.innerHTML = "<span>Map</span>";
+    map.className = button.className.replace(' tws-skeleton', '');
+    button.after(map);
+    map.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.open('https://finviz.com/map.ashx?t=sec', '_blank', "width=1500,height=800,top=200,left=600");
+    });
+
+    const trades = document.createElement("button");
+    trades.type = 'button';
+    trades.innerHTML = "<span>Trades</span>";
+    trades.className = button.className.replace(' tws-skeleton', '');
+    button.after(trades);
+    trades.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.location.assign('#/orders/trades');
+    });
+  }
+};
+
+const css = () => {
+  const sheet = makeStyle('nice');
+  sheet.insertRule('#cp-header div.one-head div.one-head-menu > button:nth-child(2), #cp-header div.one-head div.one-head-menu > button:nth-child(1), #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, div.pane-subactions > div:nth-child(4), div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, button.ptf-positions__expand-collapse-btn, .bar3-logo, footer, div.nav-container button[aria-label="Research"], div.nav-container button[aria-label="Transfer & Pay"], div.nav-container button[aria-label="Education"], div.nav-container button[aria-label="Performance & Reports"], .one-head-menu section + button, .one-head-menu section {display:none!important;}', sheet.cssRules.length);
+  // sheet.insertRule("div.ptf-positions table td span[fix="31"] span {transition: color 1s ease;}", sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table col:nth-child(3), div.ptf-positions table col:nth-child(8){/*8!*/width: 100px!important;}', sheet.cssRules.length);
+  sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-positions td {font-size: 110%;}", sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', sheet.cssRules.length);
+  /*td.bg15-accent*/sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', sheet.cssRules.length);
+  sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", sheet.cssRules.length);
+  sheet.insertRule("div.side-panel {max-width: 328px!important;}", sheet.cssRules.length);
+  sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", sheet.cssRules.length);
+  sheet.insertRule("div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule("div.sl-search-results {zoom: 1.2;}", sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7681"] span,div.ptf-positions table td div[fix="7678"] span,div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7290"] span,div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", sheet.cssRules.length);
+  sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", sheet.cssRules.length);
+  sheet.insertRule(".quote-mini-chart .highcharts-container {cursor:pointer;}", sheet.cssRules.length);
+  sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 777px;width: 325px;margin: 0px;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", sheet.cssRules.length);
+  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule("div.ptf-positions > div.flex-fixed span.end-4, .ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", sheet.cssRules.length);
+  // sheet.insertRule(".order-price-info .realtime-data-container {font-size: 19px;}", sheet.cssRules.length);
+  // sheet.insertRule("@keyframes flashGreen {0%   { color: #00ff95; text-shadow: 0 0 10px #00ff95, 0 0 20px #00ff95; } 100% { color: #00c853;text-shadow: none; } }", sheet.cssRules.length);
+  // sheet.insertRule("@keyframes flashRed {0%   { color: #ff3b3b; text-shadow: 0 0 10px #ff3b3b, 0 0 20px #ff3b3b; } 100% { color: #d50000;text-shadow: none; } }", sheet.cssRules.length);
+  // sheet.insertRule(".flash-green {color: #00c853;animation: flashGreen 0.8s ease;}", sheet.cssRules.length);
+  // sheet.insertRule(".flash-red {color: #d50000;animation: flashRed 0.8s ease;}", sheet.cssRules.length);
+  sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}", sheet.cssRules.length);
+  sheet.insertRule(".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
+  sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
+  sheet.insertRule('div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
+};
+
+window.addEventListener("load", async (e) => {
+  css();
+  await speaker();
+  await notes();
+  await copy();
+  links();
+});
+
+window.navigation.addEventListener("navigate", async () => {
+  setTimeout(async () => {
+    links();
+    await notes();
+    await copy();
+  }, 500);
+});
+
+document.addEventListener("click", async (e) => {
+  if (!e.target) return;
+  // console.log(e);
+  await speaker(e.target);
+  await chart(e.target);
+  orders(e.target);
+});
 
 // localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
 // chrome.storage.local.get(null, (data) => console.log(data))
