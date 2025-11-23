@@ -320,6 +320,16 @@ const groups = async (target) => {
 
   view['viewMode'] = (view['viewMode'] + 1) % 3;
 
+  if (!view['viewMode']) {
+    setTimeout(() => {
+      chrome.storage.local.get(null, (data) => {
+        for (key in data)
+          if (key.indexOf('_') > -1 && !document.querySelector('div.ptf-positions table tr[aria-label="'+key.split('_')[0]+'"]'))
+            chrome.storage.local.remove(key)
+      })
+    }, 13000)
+  }
+
   setTimeout(async () => { await enhanceCounter(); }, 1);
 
   await promiseWrapper(view, setStorage)
@@ -372,7 +382,7 @@ const copy = async (e, target) => {
   e.stopPropagation();
   e.preventDefault();
   var next_trade = {};
-  next_trade['copypaste'] = target.closest('tr._tbgr').innerText.trim();
+  next_trade['copyPaste'] = target.closest('tr._tbgr').innerText.trim();
   await promiseWrapper(next_trade, setStorage)
   window.location.assign('#/dashboard/positions');
 };
@@ -393,18 +403,18 @@ const notes = async () => {
 
     text.value = data['calcNotes'];
 
-    var copypaste = await promiseWrapper('copypaste', getStorage);
-    if (!copypaste['copypaste']) copypaste['copypaste'] = '';
-    if (copypaste['copypaste'].length) {
+    var copypaste = await promiseWrapper('copyPaste', getStorage);
+    if (!copypaste['copyPaste']) copypaste['copyPaste'] = '';
+    if (copypaste['copyPaste'].length) {
       if (!text.value || text.value[text.value.length-1] != "\n") text.value += "\n";
-      const transform = transformCopyPaste(text.value+copypaste['copypaste']);
+      const transform = transformCopyPaste(text.value+copypaste['copyPaste']);
       if (transform) {
         text.value = transform .trim()+ "\n";
         var next_data = {};
         next_data['calcNotes'] = text.value;
         await promiseWrapper(next_data, setStorage)
         var next_trade = {};
-        next_trade['copypaste'] = '';
+        next_trade['copyPaste'] = '';
         await promiseWrapper(next_trade, setStorage)
       }
     }
