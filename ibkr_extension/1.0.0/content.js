@@ -226,8 +226,11 @@ const mutation = async (records) => {
         r.target.after(small);
       }
       r.target.nextSibling.className = r.target.className;
-      if (r.target.parentNode.previousSibling.querySelector("span") && r.addedNodes[0].data)
-        r.target.nextSibling.innerText = ((100/parseFloat(r.target.parentNode.previousSibling.querySelector("span").innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2)+'%'
+      var span = r.target.parentNode.previousSibling.querySelector("span");
+      if (span && span.innerText && r.addedNodes[0].data)
+        r.target.nextSibling.innerText = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2)+'%'
+      else
+        r.target.nextSibling.innerText = "0.00%"
     }
   }
 }
@@ -444,16 +447,27 @@ const links = () => {
   const button = document.querySelector('.tws-shortcuts button:last-of-type');
   if (!button) {
     setTimeout(links, 3000);
-  } else if (button.innerText != "Calendar") {
+  } else if (button.innerText != "Today") {
     const calendar = document.createElement("button");
     calendar.type = 'button';
-    calendar.innerHTML = "<span>Calendar</span>";
+    calendar.innerHTML = "<span>Today</span>";
     calendar.className = button.className.replace(' tws-skeleton', '');
     button.after(calendar);
     calendar.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      window.open('https://www.investing.com/dividends-calendar/', '_blank', "width=1500,height=800,top=200,left=600");
+      window.open('https://www.investing.com/dividends-calendar/', '_blank', "width=1800,height=760,top=230,left=550");
+    });
+
+    const bets = document.createElement("button");
+    bets.type = 'button';
+    bets.innerHTML = "<span>WSB</span>";
+    bets.className = button.className.replace(' tws-skeleton', '');
+    button.after(bets);
+    bets.addEventListener("click", (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      window.open('https://www.reddit.com/r/wallstreetbets/', '_blank', "width=1800,height=760,top=230,left=550");
     });
 
     const map = document.createElement("button");
@@ -464,7 +478,7 @@ const links = () => {
     map.addEventListener("click", (e) => {
       e.stopPropagation();
       e.preventDefault();
-      window.open('https://finviz.com/map.ashx?t=sec', '_blank', "width=1500,height=800,top=200,left=600");
+      window.open('https://finviz.com/map.ashx?t=sec', '_blank', "width=1800,height=760,top=230,left=550");
     });
 
     const trades = document.createElement("button");
