@@ -71,7 +71,7 @@ async function setDisplayForTicker(conid, ticker) {
 }
 
 async function setNextColorForTicker(conid, ticker) {
-  const all = ["rgb(159, 27, 27)", "rgb(18, 220, 18)", "rgb(0, 167, 255)", "rgb(163, 104, 14)", "inherit"];
+  const all = ["rgb(159, 27, 27)", "rgb(18, 220, 18)", "rgb(0, 167, 255)", "rgb(167, 84, 212)", "rgb(163, 104, 14)", "inherit"];
 
   const old_data = await promiseWrapper(ticker, getStorage);
 
