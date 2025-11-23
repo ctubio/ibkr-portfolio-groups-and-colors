@@ -221,6 +221,7 @@ const mutation = async (records) => {
   }
 }
 
+var speakTimeout;
 const speaker = async (e, target) => {
   const speakSelector = '#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span';
   const isTicker = target && target.classList.contains('_tbsid') && target.nextSibling && target.nextSibling.attributes.conid;
@@ -255,22 +256,37 @@ const speaker = async (e, target) => {
       if (!next['speakNet']) next['speakNet'] = "[]";
       next['speakNet'] = JSON.parse(next['speakNet']);
       if (!next['speakNet'].length) return;
-      var voices = "";
+      var msgs = "";
       next['speakNet'].forEach((voice) => {
         if (voice == 'net') {
           var amt = document.querySelector(speakSelector);
-          if (amt) voices = parseInt(amt.innerText.replace(",","").replace(".",","))+"\n!\n" + voices;
+          if (amt) msgs = parseInt(amt.innerText.replace(",","").replace(".",","))+'\n' + msgs;
         } else {
           var text = document.querySelector('div.ptf-positions table tr td[conid="'+voice+'"]');
           var price = document.querySelector('div.ptf-positions table tr:has(td[conid="'+voice+'"]) span[fix="31"]');
-          if (text && price) voices += text.innerText.split("").join(" ") + "\n" + price.innerText.replace(",","").replace(".",",")+"\n!\n";
+          if (text && price) msgs += text.innerText.split("").join(" ") + ": " + price.innerText.replace(",","").replace(".",",")+'\n';
         }
       });
-      var syn = new SpeechSynthesisUtterance(voices);
-      syn.onend = () => {
-        setTimeout(speakPrices, /*21*/6000);
+      if (!msgs.length) {
+        setTimeout(speakPrices, 21000);
+        return
+      }
+      var msgsList = msgs.trim().split('\n');
+      msgsList.sort();
+      if (msgsList.length == 1 && msgsList[0].indexOf(":") > -1)
+        msgsList[0] = msgsList[0].substring(msgsList[0].indexOf(":")+2);
+      var msgIndex = 0;
+      const speakMsg = () => {
+        var syn = new SpeechSynthesisUtterance(msgsList[msgIndex++]);
+        syn.onend = () => {
+          clearTimeout(speakTimeout);
+          if (msgIndex == msgsList.length)
+            speakTimeout = setTimeout(speakPrices, 21000);
+          else speakTimeout = setTimeout(speakMsg, 3000);
+        };
+        window.speechSynthesis.speak(syn);
       };
-      window.speechSynthesis.speak(syn);
+      speakMsg();
     };
     window.speechSynthesis.cancel();
     setTimeout(speakPrices, 1);
@@ -279,7 +295,7 @@ const speaker = async (e, target) => {
     applyCssRule('speakNet', 4, 'div.ptf-positions table td._tbsid::before {content: "";}');
     data['speakNet'].forEach((voice) => {
       if (voice == 'net')
-        applyCssRule('speakNet', 3, speakSelector+'::before {content: "🕪";color:inherit!important;font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+        applyCssRule('speakNet', 3, speakSelector+'::before {content: "🕪";color:#ddd!important;font-size: 19px;vertical-align: middle;padding-right: 21px;}');
       else {
         if (rules.length) rules += ", ";
         rules += 'div.ptf-positions table tr:has(td[conid="'+voice+'"]) td._tbsid::before';
