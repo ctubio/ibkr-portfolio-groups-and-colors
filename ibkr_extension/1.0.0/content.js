@@ -227,10 +227,12 @@ const mutation = async (records) => {
       }
       r.target.nextSibling.className = r.target.className;
       var span = r.target.parentNode.previousSibling.querySelector("span");
-      if (span && span.innerText && r.addedNodes[0].data)
-        r.target.nextSibling.innerText = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2)+'%'
-      else
-        r.target.nextSibling.innerText = "0.00%"
+      timeOut = setTimeout(() => {
+        if (span && span.innerText && r.addedNodes[0].data)
+          r.target.nextSibling.innerText = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2)+'%'
+        else
+          r.target.nextSibling.innerText = "0.00%"
+      }, span.innerText == '—' ? 1000 : 1);
     }
   }
 }
@@ -500,7 +502,7 @@ const css = () => {
   sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
   sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
   sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', sheet.cssRules.length);
+  sheet.insertRule('div.ptf-positions table td div[fix="7288"] span, .portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;}', sheet.cssRules.length);
   sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
   sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
   sheet.insertRule('div.ptf-positions table col:nth-child(3), div.ptf-positions table col:nth-child(8){width: 100px!important;}', sheet.cssRules.length);
@@ -544,6 +546,7 @@ const css = () => {
   sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
   sheet.insertRule('div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
   sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}', sheet.cssRules.length);
+  sheet.insertRule('.after-32 {margin-bottom: 0px!important;}', sheet.cssRules.length);
 };
 
 (new MutationObserver((records) => {
