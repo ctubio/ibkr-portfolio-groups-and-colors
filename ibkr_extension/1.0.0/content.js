@@ -17,14 +17,14 @@ function getStorage(collection, resolve) {
 }
 
 function makeStyle(conid) {
-  if (!document.querySelector('style#rules_' + conid)) {
-    const styleEl = document.createElement("style");
-    styleEl.type = 'text/css';
-    styleEl.id = 'rules_' + conid;
-    document.head.appendChild(styleEl);
+  var style = document.querySelector('style#rules_' + conid);
+  if (!style) {
+    style = document.createElement("style");
+    style.type = 'text/css';
+    style.id = 'rules_' + conid;
+    document.head.appendChild(style);
   }
-
-  return document.querySelector('style#rules_' + conid).sheet;
+  return style.sheet;
 }
 
 function applyCssRule(conid, index, rule) {
@@ -170,110 +170,126 @@ var timeOut;
 const mutation = async (records) => {
   for (const r of records) {
     if (!r.addedNodes[0]) continue;
-    if (r.addedNodes[0].nodeName == "TBODY" && r.target.nodeName == "TABLE" && r.target.id == "cp-ptf-positions-table0") {
-      document.querySelectorAll('td[conid]:not([data-enhanced]) span[dir]').forEach(async (span) => {
-        const ticker = span.innerText.trim();
-        if (!ticker) return;
-        span.parentNode.parentNode.parentNode.dataset.enhanced = "true";
 
-        await setColorForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_color");
-        await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
+    if (
+      (r.addedNodes[0].nodeName == "TR" && r.target.nodeName == "TBODY" && r.target.parentNode && r.target.parentNode.id == "cp-ptf-positions-table0")
+      || (r.addedNodes[0].nodeName == "TBODY" && r.target.nodeName == "TABLE" && r.target.id == "cp-ptf-positions-table0")
+    ) {
+      const td = r.addedNodes[0].querySelector('td[conid]');
+      if (!td) continue;
+      const span = td.querySelector('span[dir]');
+      if (!span) continue;
+      const ticker = span.innerText.trim();
+      if (!ticker) continue;
+
+      setTimeout(async () => {
+        await setColorForTicker(td.attributes.conid.value, ticker + "_color");
+        await setDisplayForTicker(td.attributes.conid.value, ticker + "_view");
 
         clearTimeout(timeOut);
         timeOut = setTimeout(async () => {
           await enhanceCounter();
-        }, 400);
-
-        span.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          e.preventDefault();
-          window.getSelection().removeAllRanges();
-          const ticker = e.target.innerText.trim();
-          if (!ticker) return;
-          if (e.detail === 1) {
-            timeOut = setTimeout(async () => {
-              await setNextColorForTicker(e.target.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_color");
-            }, 400);
-          }
-          if (e.detail === 2) {
-            clearTimeout(timeOut);
-            await setNextDisplayForTicker(e.target.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
-          }
-        });
-      });
+        }, 333);
+      }, 1);
     }
 
     else if (r.target.parentNode && r.target.parentNode.attributes.fix && ['85','88'].indexOf(r.target.parentNode.attributes.fix.value) > -1) {
-      var me = r.target.parentNode.attributes.fix.value;
-      var other = me == '85' ? '88' : '85';
+      var other = r.target.parentNode.attributes.fix.value == '85' ? '88' : '85';
       var meNum = parseInt(r.addedNodes[0].data.replace(",","") || "0");
       var otherNum = parseInt(r.target.parentNode.parentNode.parentNode.querySelector("div[fix='"+other+"'] span").innerText.replace(",","") || "0");
       var meConid = r.target.parentNode.parentNode.parentNode.querySelector("td[conid]").attributes.conid.value;
       if (!meConid) continue;
 
-      var color = "";
-      if (meNum == otherNum) {
-        color = "inherit";
-      } else if (me == '88' ? (meNum > otherNum) : (otherNum > meNum)) {
-        color = "#0eb35b";
-      } else {
-        color = "#e62333";
+      var color = "inherit";
+      if (meNum != otherNum) {
+        color = (other == '85' ? (meNum > otherNum) : (otherNum > meNum)) ? "#0eb35b" : "#e62333";
       }
 
-      applyCssRule(meConid, 3, 'div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="86"], div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td span[fix="31"] span, div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="84"] {color:'+color+'}');
-      continue
+      applyCssRule('volume_'+meConid, 0, 'div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="86"], div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td span[fix="31"] span, div.ptf-positions table tr:has(td[conid="'+meConid+'"]) td div[fix="84"] {color:'+color+'}');
     }
 
     else if (r.target.parentNode && r.target.parentNode.attributes.fix && ['84','86'].indexOf(r.target.parentNode.attributes.fix.value) > -1) {
       var num = r.addedNodes[0].data.replace('C', '').replace('F', '');
       if (!Number(num)) continue;
-      // r.target.classList.remove("flash-green", "flash-red");
+
       r.target.parentNode.classList.remove("fade-opacity");
-      // void r.target.offsetWidth;
-
-      // if (r.addedNodes[0].data && r.removedNodes[0].data) {
-        // if (r.addedNodes[0].data > r.removedNodes[0].data) {
-          // r.target.classList.add("flash-green");
-        // } else if (r.addedNodes[0].data < r.removedNodes[0].data) {
-          // r.target.classList.add("flash-red");
-        // }
-      // }
-
       r.target.parentNode.style.opacity = 0.9;
       requestAnimationFrame(() => {
         r.target.parentNode.classList.add("fade-opacity");
       });
-
-      continue
     }
   }
 }
 
-var speakerInterval;
-const speaker = async (target) => {
+const speaker = async (e, target) => {
   const speakSelector = '#cp-ib-app-main-content div.portfolio-summary__header.insetx-24.insety-16  div.account-alias__container__account-values.fs7 > div:nth-child(2) > span';
-  if (target && target != document.querySelector(speakSelector)) return
-
+  const isTicker = target && target.classList.contains('_tbsid') && target.nextSibling && target.nextSibling.attributes.conid;
+  if (target && target != document.querySelector(speakSelector) && !isTicker) return
+  if (e) {
+    e.stopPropagation();
+    e.preventDefault();
+  }
   var data = await promiseWrapper('speakNet', getStorage);
-  if (!data['speakNet']) data['speakNet'] = 0;
+  if (!data['speakNet']) data['speakNet'] = "[]";
+  data['speakNet'] = JSON.parse(data['speakNet']);
 
   if (target) {
-    data['speakNet'] = +!data['speakNet'];
-    await promiseWrapper(data, setStorage);
+    const conid = isTicker ? target.nextSibling.attributes.conid.value : 'net';
+    const indexConid = data['speakNet'].indexOf(conid);
+    if (indexConid == -1) data['speakNet'].push(conid);
+    else data['speakNet'].splice(indexConid, 1);
+
+    var encodedData = {};
+    encodedData['speakNet'] = JSON.stringify(data['speakNet']);
+    await promiseWrapper(encodedData, setStorage);
   } else {
     makeStyle('speakNet');
     applyCssRule('speakNet', 0, speakSelector+' {cursor: pointer;font-size:1.825rem;}');
+    applyCssRule('speakNet', 1, speakSelector+':hover::before {content: "🕪";color:#575757;font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+    applyCssRule('speakNet', 2, 'div.ptf-positions table td._tbsid:hover::before {content: "🕪";color:#575757;}');
   }
-  if (data['speakNet']) {
-    speakerInterval = setInterval(()=>{
-      const netAmount = document.querySelector(speakSelector);
-      if (!netAmount) return;
-      window.speechSynthesis.speak(new SpeechSynthesisUtterance(parseInt(netAmount.innerText.replace(",",""))));
-    }, 21000);
-    applyCssRule('speakNet', 1, speakSelector+'::before {content: "🕪";font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+
+  if (data['speakNet'].length) {
+    const speakPrices = async () => {
+      var next = await promiseWrapper('speakNet', getStorage);
+      if (!next['speakNet']) next['speakNet'] = "[]";
+      next['speakNet'] = JSON.parse(next['speakNet']);
+      if (!next['speakNet'].length) return;
+      var voices = "";
+      next['speakNet'].forEach((voice) => {
+        if (voice == 'net') {
+          var amt = document.querySelector(speakSelector);
+          if (amt) voices = parseInt(amt.innerText.replace(",","").replace(".",","))+"\n!\n" + voices;
+        } else {
+          var text = document.querySelector('div.ptf-positions table tr td[conid="'+voice+'"]');
+          var price = document.querySelector('div.ptf-positions table tr:has(td[conid="'+voice+'"]) span[fix="31"]');
+          if (text && price) voices += text.innerText.split("").join(" ") + "\n" + price.innerText.replace(",","").replace(".",",")+"\n!\n";
+        }
+      });
+      var syn = new SpeechSynthesisUtterance(voices);
+      syn.onend = () => {
+        setTimeout(speakPrices, /*21*/6000);
+      };
+      window.speechSynthesis.speak(syn);
+    };
+    window.speechSynthesis.cancel();
+    setTimeout(speakPrices, 1);
+    var rules = "";
+    applyCssRule('speakNet', 3, speakSelector+'::before {content: "";}');
+    applyCssRule('speakNet', 4, 'div.ptf-positions table td._tbsid::before {content: "";}');
+    data['speakNet'].forEach((voice) => {
+      if (voice == 'net')
+        applyCssRule('speakNet', 3, speakSelector+'::before {content: "🕪";color:inherit!important;font-size: 19px;vertical-align: middle;padding-right: 21px;}');
+      else {
+        if (rules.length) rules += ", ";
+        rules += 'div.ptf-positions table tr:has(td[conid="'+voice+'"]) td._tbsid::before';
+      }
+    });
+    if (rules.length)
+      applyCssRule('speakNet', 4, rules+' {content: "🕪";color:#ddd!important;font-size: 19px;vertical-align: middle;padding-right: 21px;}');
   } else {
-    clearInterval(speakerInterval);
-    applyCssRule('speakNet', 1, speakSelector+'::before {content: "";}');
+    applyCssRule('speakNet', 3, speakSelector+'::before {content: "";}');
+    applyCssRule('speakNet', 4, 'div.ptf-positions table td._tbsid::before {content: "";}');
   }
 };
 
@@ -292,11 +308,31 @@ const groups = async (target) => {
 
   await promiseWrapper(view, setStorage)
 
-  document.querySelectorAll('td[conid][data-enhanced] span[dir]').forEach(async (span) => {
+  document.querySelectorAll('td[conid] span[dir]').forEach(async (span) => {
     const ticker = span.innerText.trim();
     if (!ticker) return;
     await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
   });
+};
+
+var timeOutColors;
+const colors = async (e, target) => {
+  const table = document.querySelector('div.ptf-positions table');
+  if (!target || !table || target.nodeName != "SPAN" || !target.attributes.dir || !table.contains(target) || !target.closest('td[conid]')) return
+  e.stopPropagation();
+  e.preventDefault();
+  window.getSelection().removeAllRanges();
+  const ticker = target.innerText.trim();
+  if (!ticker) return;
+  if (e.detail === 1) {
+    timeOutColors = setTimeout(async () => {
+      await setNextColorForTicker(target.closest('td[conid]').attributes.conid.value, ticker + "_color");
+    }, 400);
+  }
+  if (e.detail === 2) {
+    clearTimeout(timeOutColors);
+    await setNextDisplayForTicker(target.closest('td[conid]').attributes.conid.value, ticker + "_view");
+  }
 };
 
 const chart = (target) => {
@@ -314,24 +350,15 @@ const orders = (target) => {
   window.location.assign('#/orders');
 };
 
-const copy = async () => {
-  var trs = document.querySelectorAll('._tbscomfortable table tr._tbgr');
-  if (!trs.length) {
-    if (location.href.indexOf('/orders/trades') > -1)
-      setTimeout(copy, 1000);
-  } else {
-    trs.forEach(async (tr) => {
-      tr.addEventListener("click", async (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        var next_trade = {};
-        next_trade['copypaste'] = tr.innerText.trim();
-        console.log(next_trade);
-        await promiseWrapper(next_trade, setStorage)
-        window.location.assign('#/dashboard/positions');
-      });
-    });
-  }
+const copy = async (e, target) => {
+  const table = document.querySelector('._tbscomfortable table');
+  if (!target || !table || !table.contains(target) || !target.closest('tr._tbgr')) return
+  e.stopPropagation();
+  e.preventDefault();
+  var next_trade = {};
+  next_trade['copypaste'] = target.closest('tr._tbgr').innerText.trim();
+  await promiseWrapper(next_trade, setStorage)
+  window.location.assign('#/dashboard/positions');
 };
 
 const notes = async () => {
@@ -340,13 +367,14 @@ const notes = async () => {
     if (location.href.indexOf('/dashboard') > -1)
       setTimeout(notes, 3000);
   } else if (!document.querySelector('textarea#calcNotes')) {
-    var data = await promiseWrapper('calcNotes', getStorage);
-    if (!data['calcNotes']) data['calcNotes'] = '';
-
     const text = document.createElement("textarea");
     text.id = 'calcNotes';
     text.spellcheck = false;
-    text.style = 'width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;';
+    sdiv.after(text);
+
+    var data = await promiseWrapper('calcNotes', getStorage);
+    if (!data['calcNotes']) data['calcNotes'] = '';
+
     text.value = data['calcNotes'];
 
     var copypaste = await promiseWrapper('copypaste', getStorage);
@@ -365,7 +393,6 @@ const notes = async () => {
       }
     }
 
-    sdiv.after(text);
     text.addEventListener("keyup", async (e) => {
       var val = e.target.value;
       var next_data = {};
@@ -470,37 +497,36 @@ const css = () => {
   sheet.insertRule(".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
   sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
   sheet.insertRule('div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
+  sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}', sheet.cssRules.length);
 };
 
-const observer = new MutationObserver((records) => {
+(new MutationObserver((records) => {
   mutation(records);
-});
-observer.observe(document.body, { childList: true, subtree: true });
+})).observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener("load", async (e) => {
   css();
   links();
   await speaker();
   await notes();
-  await copy();
 });
 
 window.navigation.addEventListener("navigate", async () => {
   setTimeout(async () => {
     links();
     await notes();
-    await copy();
   }, 500);
 });
 
-document.addEventListener("click", async (e) => {
+document.addEventListener("click", async (e) => { // console.log(e); } );
   if (!e.target) return;
-  // console.log(e);
-  await speaker(e.target);
-  await chart(e.target);
   await groups(e.target);
+  await colors(e, e.target);
+  await copy(e, e.target);
+  await speaker(e, e.target);
+  await chart(e.target);
   orders(e.target);
   // localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
   // chrome.storage.local.get(null, (data) => console.log(data))
   // chrome.storage.local.set({})
-});
+}, true);
