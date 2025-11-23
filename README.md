@@ -1,5 +1,7 @@
 # ibkr-portfolio-groups-and-colors
-Unpacked (unpublished in the store) chrome extension for IBKR Client Portal, to organize the portfolio list using multiple colors (white, green, red, blue, yellow or orange) or 2 tabs (Growth Positions or High-Yield Dividend Positions).
+Unpacked (unpublished in the store) chrome extension for IBKR Client Portal.
+
+Organize the portfolio list using multiple colors (white, green, red, blue, purple, yellow or orange) or 2 tabs (Growth Positions or High-Yield Dividend Positions).
 
 How to use it (on IBKR Portfolio page):
 - Click the name of a Portfolio Position to change the color.
