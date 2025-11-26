@@ -109,7 +109,7 @@ async function setNextDisplayForTicker(conid, ticker) {
 async function enhanceCounter() {
   const group = document.querySelector('div.ptf-positions h3');
   if (group && group.innerText.split(" ").length == 2) {
-    group.innerHTML = group.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView" style="font-size: 16px;font-weight: normal;"></span>';
+    group.innerHTML = group.innerText.split(" ").slice(0,2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView"></span>';
   }
 
   var collapsed = total = 0;
@@ -228,10 +228,15 @@ const mutation = async (records) => {
       r.target.nextSibling.className = r.target.className;
       var span = r.target.parentNode.previousSibling.querySelector("span");
       timeOut = setTimeout(() => {
-        if (span && span.innerText && r.addedNodes[0].data)
-          r.target.nextSibling.innerText = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2)+'%'
-        else
+        if (span && span.innerText && r.addedNodes[0].data) {
+          var amtdiff = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(r.addedNodes[0].data.replace(',', ''))).toFixed(2);
+          if (parseFloat(amtdiff) > 0) {
+            amtdiff = "+" + amtdiff;
+          }
+          r.target.nextSibling.innerText = amtdiff + '%'
+        } else {
           r.target.nextSibling.innerText = "0.00%"
+        }
       }, span.innerText == '—' ? 1000 : 1);
     }
   }
@@ -284,8 +289,9 @@ const speaker = async (e, target) => {
           if (text && price) msgs += text.innerText.split("").join(" ") + ": " + price.innerText.replace(",","").replace(".",",")+'\n';
         }
       });
-      if (!msgs.length) {
-        setTimeout(speakPrices, 21000);
+      console.log("MSG", msgs)
+      if (!msgs.length || msgs.indexOf("NaN") != -1) {
+        setTimeout(speakPrices, 3000);
         return
       }
       var msgsList = msgs.trim().split('\n');
@@ -498,55 +504,61 @@ const links = () => {
 
 const css = () => {
   const sheet = makeStyle('nice');
-  sheet.insertRule('#cp-header div.one-head div.one-head-menu > button:nth-child(2), #cp-header div.one-head div.one-head-menu > button:nth-child(1), #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, div.pane-subactions > div:nth-child(4), div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, button.ptf-positions__expand-collapse-btn, .bar3-logo, footer, div.nav-container button[aria-label="Research"], div.nav-container button[aria-label="Transfer & Pay"], div.nav-container button[aria-label="Education"], div.nav-container button[aria-label="Performance & Reports"], .one-head-menu section + button, .one-head-menu section {display:none!important;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7671"] span, div.ptf-positions table td div[fix="7287"] span, div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7288"] span, .portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7281"] span, div.ptf-positions table td div[fix="7087"] span, div.ptf-positions table td div[fix="7290"] span, div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="85"], div.ptf-positions table td div[fix="88"], div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table col:nth-child(3), div.ptf-positions table col:nth-child(8){width: 100px!important;}', sheet.cssRules.length);
-  sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-positions td {font-size: 110%;}", sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', sheet.cssRules.length);
-  sheet.insertRule(".order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}", sheet.cssRules.length);
+  const has = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
+  sheet.insertRule(has + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + has + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + has + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + has + ' div.pane-subactions > div:nth-child(4), ' + has + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + has + ' .order-pane .odr-sbmt .flex-flex, ' + has + ' .order_ticket__submit-view > .flex-row, ' + has + ' button.ptf-positions__expand-collapse-btn, ' + has + ' .bar3-logo, ' + has + ' footer, ' + has + ' div.nav-container button[aria-label="Research"], ' + has + ' div.nav-container button[aria-label="Transfer & Pay"], ' + has + ' div.nav-container button[aria-label="Education"], ' + has + ' div.nav-container button[aria-label="Performance & Reports"], ' + has + ' .one-head-menu section + button, ' + has + ' .one-head-menu section {display:none!important;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="86"], ' + has + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="85"], ' + has + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7671"] span, ' + has + ' div.ptf-positions table td div[fix="7287"] span, ' + has + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', sheet.cssRules.length);
+  sheet.insertRule(has + '.portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;font-weight:600;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7281"] span, ' + has + ' div.ptf-positions table td div[fix="7087"] span, ' + has + ' div.ptf-positions table td div[fix="7290"] span, ' + has + ' div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="85"],' + has + ' div.ptf-positions table td div[fix="88"], ' + has + ' div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
+  sheet.insertRule(has + ' div.ptf-positions table td:has(span[fix="83"]) {overflow: visible;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table col:nth-child(12) {width: 90px!important;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table col:nth-child(3), ' + has + ' div.ptf-positions table col:nth-child(8){width: 100px!important;}', sheet.cssRules.length);
+  sheet.insertRule(has + "div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-positions td {font-size: 110%;}", sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', sheet.cssRules.length);
+  sheet.insertRule('.order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}', sheet.cssRules.length);
   sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', sheet.cssRules.length);
-  sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', sheet.cssRules.length);
-  sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', sheet.cssRules.length);
-  sheet.insertRule('.pos-widget table td span.fg-buy, .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', sheet.cssRules.length);
-  sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', sheet.cssRules.length);
-  sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99 7 7);}', sheet.cssRules.length);
-  sheet.insertRule("#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", sheet.cssRules.length);
-  sheet.insertRule("div.side-panel {max-width: 328px!important;}", sheet.cssRules.length);
-  sheet.insertRule("div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", sheet.cssRules.length);
-  sheet.insertRule("div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", sheet.cssRules.length);
-  sheet.insertRule("div.sl-search-results {zoom: 1.2;}", sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7681"] span,div.ptf-positions table td div[fix="7678"] span,div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', sheet.cssRules.length);
-  sheet.insertRule('div.ptf-positions table td div[fix="7290"] span,div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions table {min-width: 2343px!important;}", sheet.cssRules.length);
-  sheet.insertRule("div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions table tr > td:nth-child(3) div, div.ptf-positions table td.bg15-accent {overflow:visible;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions h3, .quote-mini-chart .highcharts-container {cursor:pointer;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions h3 {display:inline;}", sheet.cssRules.length);
-  sheet.insertRule(".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 777px;width: 325px;margin: 0px;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", sheet.cssRules.length);
-  sheet.insertRule(".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", sheet.cssRules.length);
-  sheet.insertRule("div.ptf-positions > div.flex-fixed span.end-4, .ptf-models .ib-row .ib-col table thead, .ptf-models .ib-row .ib-col div.flex-fixed, .ptf-models .ib-row .ib-col table tr td:nth-child(4), .ptf-models div.ib-row div button._btn.lg {display:none;}", sheet.cssRules.length);
+  sheet.insertRule(has + '.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', sheet.cssRules.length);
+  sheet.insertRule(has + '.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', sheet.cssRules.length);
+  sheet.insertRule(has + '.pos-widget table td span.fg-buy, ' + has + ' .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', sheet.cssRules.length);
+  sheet.insertRule(has + '.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', sheet.cssRules.length);
+  sheet.insertRule(has + '.pos-widget table td span.fg-sell {background-color: rgb(99, 7, 7);}', sheet.cssRules.length);
+  sheet.insertRule(has + "#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.side-panel {max-width: 328px!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.sl-search-results {zoom: 1.2;}", sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7681"] span, ' + has + 'div.ptf-positions table td div[fix="7678"] span, ' + has + 'div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7290"] span, ' + has + 'div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', sheet.cssRules.length);
+  sheet.insertRule(has + "div.ptf-positions table {min-width: 2343px!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule(has + "div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions table tr > td:nth-child(3) div, ' + has + ' div.ptf-positions table td.bg15-accent {overflow:visible;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions h3, ' + has + ' .quote-mini-chart .highcharts-container {cursor:pointer;}', sheet.cssRules.length);
+  sheet.insertRule(has + "div.ptf-positions h3 {display:inline;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".tws-shortcuts {margin-top: 150px;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 336px;width: 325px;margin: 0px;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule(has + 'div.ptf-positions > div.flex-fixed span.end-4, ' + has + ' .ptf-models .ib-row .ib-col table thead, ' + has + ' .ptf-models .ib-row .ib-col div.flex-fixed, ' + has + ' .ptf-models .ib-row .ib-col table tr td:nth-child(4), ' + has + ' .ptf-models div.ib-row div button._btn.lg {display:none;}', sheet.cssRules.length);
   sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}", sheet.cssRules.length);
-  sheet.insertRule(".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
-  sheet.insertRule('.order-info__block input[name="quantity"],.order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
-  sheet.insertRule('div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
-  sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}', sheet.cssRules.length);
-  sheet.insertRule('.after-32 {margin-bottom: 0px!important;}', sheet.cssRules.length);
+  sheet.insertRule(has + ".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
+  sheet.insertRule('.order-info__block input[name="quantity"], .order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'span#toggleCustomView {font-size: 16px;font-weight: normal;}', sheet.cssRules.length);
+  sheet.insertRule(has + 'div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
+  sheet.insertRule(has + '.after-32 {margin-bottom: 0px!important;}', sheet.cssRules.length);
+  sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;margin-top: 10px;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}', sheet.cssRules.length);
 };
 
 (new MutationObserver((records) => {
