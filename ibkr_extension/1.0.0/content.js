@@ -289,7 +289,6 @@ const speaker = async (e, target) => {
           if (text && price) msgs += text.innerText.split("").join(" ") + ": " + price.innerText.replace(",","").replace(".",",")+'\n';
         }
       });
-      console.log("MSG", msgs)
       if (!msgs.length || msgs.indexOf("NaN") != -1) {
         setTimeout(speakPrices, 3000);
         return
@@ -347,7 +346,7 @@ const groups = async (target) => {
     setTimeout(() => {
       chrome.storage.local.get(null, (data) => {
         for (key in data)
-          if (key.indexOf('_') > -1 && !document.querySelector('div.ptf-positions table tr[aria-label="'+key.split('_')[0]+'"]'))
+          if (document.querySelectorAll('div.ptf-positions table td[conid]').length > 21 && key.indexOf('_') > -1 && !document.querySelector('div.ptf-positions table tr[aria-label="'+key.split('_')[0]+'"]'))
             chrome.storage.local.remove(key)
       })
     }, 13000)
@@ -355,16 +354,16 @@ const groups = async (target) => {
 
   setTimeout(async () => { await enhanceCounter(); }, 1);
 
-  await promiseWrapper(view, setStorage)
-
   document.querySelectorAll('td[conid] span[dir]').forEach(async (span) => {
     const ticker = span.innerText.trim();
     if (!ticker) return;
     await setDisplayForTicker(span.parentNode.parentNode.parentNode.attributes.conid.value, ticker + "_view");
   });
+
+  await promiseWrapper(view, setStorage)
 };
 
-var timeOutColors;
+var timeOutDoubleClick;
 const colors = async (e, target) => {
   const table = document.querySelector('div.ptf-positions table');
   if (!target || !table || target.nodeName != "SPAN" || !target.attributes.dir || !table.contains(target) || !target.closest('td[conid]')) return
@@ -374,23 +373,40 @@ const colors = async (e, target) => {
   const ticker = target.innerText.trim();
   if (!ticker) return;
   if (e.detail === 1) {
-    timeOutColors = setTimeout(async () => {
+    timeOutDoubleClick = setTimeout(async () => {
       await setNextColorForTicker(target.closest('td[conid]').attributes.conid.value, ticker + "_color");
     }, 400);
   }
   if (e.detail === 2) {
-    clearTimeout(timeOutColors);
+    clearTimeout(timeOutDoubleClick);
     await setNextDisplayForTicker(target.closest('td[conid]').attributes.conid.value, ticker + "_view");
   }
 };
 
-const chart = (target) => {
+const chart = (e, target) => {
   const highchart = document.querySelector('.quote-mini-chart .highcharts-container');
   if (!target || !highchart || !highchart.contains(target)) return
-  const ticker = document.querySelector('.quote-symbol div');
-  if (ticker) {
+  if (e.detail === 1) {
+    timeOutDoubleClick = setTimeout(() => {
+      const conid = document.querySelector('td[conid].bg15-accent');
+      if (!conid) return
+      window.open("https://www.interactivebrokers.ie/portal/#/quote/"+conid.attributes.conid.value, "_blank", "width=1500,height=600,top=300,left=600");
+    }, 400);
+  }
+  if (e.detail === 2) {
+    clearTimeout(timeOutDoubleClick);
+    const ticker = document.querySelector('.quote-symbol div');
+    if (!ticker) return
     window.open("https://www.tradingview.com/chart/Ese8JXt2/?symbol=" + ticker.innerText, "_blank", "width=1500,height=400,top=400,left=600");
   }
+};
+
+const fundamentals = (target) => {
+  const h1 = document.querySelector('div.quote-main div.quote-symprice h1');
+  if (!target || !h1 || !h1.contains(target)) return
+  const conid = document.querySelector('td[conid].bg15-accent').attributes.conid.value;
+  if (!conid) return
+  window.open("https://www.interactivebrokers.ie/portal/#/quote/"+conid+"/fundamentals/landing", "_blank", "width=1500,height=800,top=200,left=600");
 };
 
 const orders = (target) => {
@@ -504,61 +520,72 @@ const links = () => {
 
 const css = () => {
   const sheet = makeStyle('nice');
-  const has = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
-  sheet.insertRule(has + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + has + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + has + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + has + ' div.pane-subactions > div:nth-child(4), ' + has + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + has + ' .order-pane .odr-sbmt .flex-flex, ' + has + ' .order_ticket__submit-view > .flex-row, ' + has + ' button.ptf-positions__expand-collapse-btn, ' + has + ' .bar3-logo, ' + has + ' footer, ' + has + ' div.nav-container button[aria-label="Research"], ' + has + ' div.nav-container button[aria-label="Transfer & Pay"], ' + has + ' div.nav-container button[aria-label="Education"], ' + has + ' div.nav-container button[aria-label="Performance & Reports"], ' + has + ' .one-head-menu section + button, ' + has + ' .one-head-menu section {display:none!important;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="86"], ' + has + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="85"], ' + has + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7671"] span, ' + has + ' div.ptf-positions table td div[fix="7287"] span, ' + has + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;font-weight:600;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7281"] span, ' + has + ' div.ptf-positions table td div[fix="7087"] span, ' + has + ' div.ptf-positions table td div[fix="7290"] span, ' + has + ' div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="85"],' + has + ' div.ptf-positions table td div[fix="88"], ' + has + ' div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
-  sheet.insertRule(has + ' div.ptf-positions table td:has(span[fix="83"]) {overflow: visible;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table col:nth-child(12) {width: 90px!important;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table col:nth-child(3), ' + has + ' div.ptf-positions table col:nth-child(8){width: 100px!important;}', sheet.cssRules.length);
-  sheet.insertRule(has + "div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-positions td {font-size: 110%;}", sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', sheet.cssRules.length);
+  const ptf = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
+  const tv = 'body:has(div#tv-chart) ';
+  const fund = 'body:has(section.fundamentals-app) ';
+  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + ptf + ' div.pane-subactions > div:nth-child(4), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + ptf + ' .order-pane .odr-sbmt .flex-flex, ' + ptf + ' .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section {display:none!important;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], ' + ptf + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"], ' + ptf + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7671"] span, ' + ptf + ' div.ptf-positions table td div[fix="7287"] span, ' + ptf + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7288"] {position: relative;left: -5px;}', sheet.cssRules.length);
+  sheet.insertRule('.portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;font-weight:600;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7281"] span, ' + ptf + ' div.ptf-positions table td div[fix="7087"] span, ' + ptf + ' div.ptf-positions table td div[fix="7290"] span, ' + ptf + ' div.ptf-positions table td div[fix="7639"] span {color:#939393;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"],' + ptf + ' div.ptf-positions table td div[fix="88"], ' + ptf + ' div.ptf-positions table td._npos {width: 80px!important;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + ' div.ptf-positions table td:has(span[fix="83"]) {overflow: visible;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table col:nth-child(12) {width: 90px!important;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table col:nth-child(3), ' + ptf + ' div.ptf-positions table col:nth-child(8){width: 100px!important;}', sheet.cssRules.length);
+  sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-positions td {font-size: 110%;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}', sheet.cssRules.length);
   sheet.insertRule('.order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}', sheet.cssRules.length);
   sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.pos-widget table td span.fg-buy, ' + has + ' .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', sheet.cssRules.length);
-  sheet.insertRule(has + '.pos-widget table td span.fg-sell {background-color: rgb(99, 7, 7);}', sheet.cssRules.length);
-  sheet.insertRule(has + "#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.side-panel {max-width: 328px!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.sl-search-results {zoom: 1.2;}", sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7681"] span, ' + has + 'div.ptf-positions table td div[fix="7678"] span, ' + has + 'div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table td div[fix="7290"] span, ' + has + 'div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', sheet.cssRules.length);
-  sheet.insertRule(has + "div.ptf-positions table {min-width: 2343px!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
-  sheet.insertRule(has + "div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions table tr > td:nth-child(3) div, ' + has + ' div.ptf-positions table td.bg15-accent {overflow:visible;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions h3, ' + has + ' .quote-mini-chart .highcharts-container {cursor:pointer;}', sheet.cssRules.length);
-  sheet.insertRule(has + "div.ptf-positions h3 {display:inline;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".tws-shortcuts {margin-top: 150px;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 336px;width: 325px;margin: 0px;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + ".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", sheet.cssRules.length);
-  sheet.insertRule(has + 'div.ptf-positions > div.flex-fixed span.end-4, ' + has + ' .ptf-models .ib-row .ib-col table thead, ' + has + ' .ptf-models .ib-row .ib-col div.flex-fixed, ' + has + ' .ptf-models .ib-row .ib-col table tr td:nth-child(4), ' + has + ' .ptf-models div.ib-row div button._btn.lg {display:none;}', sheet.cssRules.length);
+  sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}', sheet.cssRules.length);
+  sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}', sheet.cssRules.length);
+  sheet.insertRule('.pos-widget table td span.fg-buy, ' + ptf + ' .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}', sheet.cssRules.length);
+  sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}', sheet.cssRules.length);
+  sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99, 7, 7);}', sheet.cssRules.length);
+  sheet.insertRule(ptf + "#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.side-panel {max-width: 328px!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.ib-bar3__trade-btn-container {top: -20px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.sl-search-results {zoom: 1.2;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7681"] span, ' + ptf + 'div.ptf-positions table td div[fix="7678"] span, ' + ptf + 'div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7290"] span, ' + ptf + 'div.ptf-positions table td div[fix="7281"] span{color: #70ccc8;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.ptf-positions table {min-width: 2343px!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table td:has(div[fix="7288"]).bg15-accent span {font-size: inherit;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions table tr > td:nth-child(3) div, ' + ptf + ' div.ptf-positions table td.bg15-accent {overflow:visible;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions h3, ' + ptf + ' .quote-mini-chart .highcharts-container {cursor:pointer;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + "div.ptf-positions h3 {display:inline;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".tws-shortcuts {margin-top: 150px;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 336px;width: 325px;margin: 0px;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.ptf-positions > div.flex-fixed span.end-4, ' + ptf + ' .ptf-models .ib-row .ib-col table thead, ' + ptf + ' .ptf-models .ib-row .ib-col div.flex-fixed, ' + ptf + ' .ptf-models .ib-row .ib-col table tr td:nth-child(4), ' + ptf + ' .ptf-models div.ib-row div button._btn.lg {display:none;}', sheet.cssRules.length);
   sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}", sheet.cssRules.length);
-  sheet.insertRule(has + ".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
+  sheet.insertRule(ptf + ".fade-opacity {animation: fadeOpacity 21s linear forwards;}", sheet.cssRules.length);
   sheet.insertRule('.order-info__block input[name="quantity"], .order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'span#toggleCustomView {font-size: 16px;font-weight: normal;}', sheet.cssRules.length);
-  sheet.insertRule(has + 'div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
-  sheet.insertRule(has + '.after-32 {margin-bottom: 0px!important;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'span#toggleCustomView {font-size: 16px;font-weight: normal;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + 'div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + '.after-32 {margin-bottom: 0px!important;}', sheet.cssRules.length);
+  sheet.insertRule(ptf + '.dashboard__sub-pages .insetx-24 {padding-left: 0px!important;padding-right: 0px;!important;}', sheet.cssRules.length);
   sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;margin-top: 10px;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}', sheet.cssRules.length);
+  sheet.insertRule('div.side-panel__content button.pill {color: rgb(189, 204, 112);}', sheet.cssRules.length);
+  sheet.insertRule('div.quote-main div.quote-symprice h1 div {cursor: pointer;}', sheet.cssRules.length);
+  sheet.insertRule('div.quote-main div.quote-symprice h1:has(div:hover) {text-decoration: underline;}', sheet.cssRules.length);
+  sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}', sheet.cssRules.length);
+  sheet.insertRule(tv + 'div.quote-nav, ' + tv + 'div.border-start, ' + tv + 'div.cp-quote-tabs, ' + tv + 'header, ' + tv + 'footer {display:none!important;}', sheet.cssRules.length);
+  sheet.insertRule(fund + 'div.quote-nav, ' + fund + 'div.border-start, ' + fund + 'div.cp-quote-tabs, ' + fund + 'header, ' + fund + 'footer {display:none!important;}', sheet.cssRules.length);
 };
 
 (new MutationObserver((records) => {
@@ -585,7 +612,8 @@ document.addEventListener("click", async (e) => { // console.log(e); } );
   await colors(e, e.target);
   await copy(e, e.target);
   await speaker(e, e.target);
-  await chart(e.target);
+  await chart(e, e.target);
+  await fundamentals(e.target);
   orders(e.target);
   // setcol on click somewhere with: localStorage.setItem("xxtbqt665.U16685488_column", `[{"fix_tag":55,"movable":false,"removable":false,"name":"Instrument","description":"Enter the contract symbol or class as it is defined by the exchange on which it's trading.","groups":["G-3"],"id":"INSTRUMENT"},{"fix_tag":76,"removable":false,"name":"Position","description":"The current aggregate position for the selected account or group or model.","groups":["G2"],"id":"POSITION"},{"fix_tag":74,"name":"Avg Price","description":"The average price of the position.","groups":["G2"],"id":"AVG_PRICE"},{"fix_tag":85,"name":"Ask Size","description":"The number of contracts or shares offered at the ask price.","groups":["G4"],"id":"ASK_SIZE"},{"fix_tag":86,"name":"Ask","description":"The lowest price offered on the contract.","groups":["G4"],"id":"ASK"},{"fix_tag":31,"name":"Last","description":"The last price at which the contract traded. \\"C\\" identifies this price as the previous day's closing price. \\"H\\" means that the trading is halted.","groups":["G4"],"id":"LAST"},{"fix_tag":84,"name":"Bid","description":"The highest-priced bid for the contract.","groups":["G4"],"id":"BID"},{"fix_tag":88,"name":"Bid Size","description":"The number of contracts or shares bid for at the bid price.","groups":["G4"],"id":"BID_SIZE"},{"fix_tag":78,"name":"Daily P&L","description":"Your profit or loss for the day since prior Close Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"DAILY_PL"},{"fix_tag":83,"name":"Change %","description":"The difference between the last price and the close on the previous trading day.","groups":["G4"],"id":"PCT_CHANGE"},{"fix_tag":7681,"name":"Price/EMA(20)","description":"Price to Exponential moving average (N = 20) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA20"},{"fix_tag":7679,"name":"Price/EMA(100)","description":"Price to Exponential moving average (N = 100) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA100"},{"fix_tag":7678,"name":"Price/EMA(200)","description":"Price to Exponential moving average (N = 200) ratio - 1, displayed in percents","groups":["G40"],"id":"PRICE_VS_EMA200"},{"fix_tag":7743,"name":"52 Week Change %","description":"This is the percentage change in the company's stock price over the last fifty two weeks.","groups":["G5"],"id":"52WK_PRICE_PCT_CHANGE"},{"fix_tag":80,"name":"Unrealized P&L %","description":"Unrealized profit or loss. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL_PCT"},{"fix_tag":77,"name":"Unrealized P&L","description":"Unrealized profit or loss. Right-click on the column header to toggle between displaying the P&L as an absolute value or a percentage or both. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"UNREALIZED_PL"},{"fix_tag":73,"name":"Market Value","description":"The current market value of your position in the security. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"MARKET_VALUE"},{"fix_tag":7639,"name":"% of Net Liq","description":"Displays the market value of the contract as a percentage of the Net Liquidation Value of the account. Value is calculated with realtime valuation of financial instruments. (even when delayed data is displayed in other columns).","groups":["G2"],"id":"PCT_MARKET_VALUE"},{"fix_tag":7287,"name":"Dividend Yield %","description":"This value is the total of the expected dividend payments over the next twelve months per share divided by the Current Price and is expressed as a percentage. For derivatives, this displays the total of the expected dividend payments over the expiry date.","groups":["G14"],"id":"DIV_YIELD"},{"fix_tag":7288,"name":"Dividend Date","description":"Displays the ex-date of the dividend","groups":["G14"],"id":"DIV_DATE"},{"fix_tag":7286,"name":"Dividend Amount","description":"Displays the amount of the next dividend","groups":["G14"],"id":"DIV_AMT"},{"fix_tag":7671,"name":"Annual Dividends","description":"This value is the total of the expected dividend payments over the next twelve months per share.","groups":["G14"],"id":"DIVIDENDS"},{"fix_tag":7290,"name":"P/E excluding extraordinary items","description":"This ratio is calculated by dividing the current Price by the sum of the Diluted Earnings Per Share from continuing operations BEFORE Extraordinary Items and Accounting Changes over the last four interim periods.","groups":["G15"],"id":"PE"},{"fix_tag":7281,"name":"Category","description":"Displays a more detailed level of description within the industry under which the underlying company can be categorized.","groups":["G-3"],"id":"CATEGORY"},{"fix_tag":7087,"name":"Hist. Vol. %","description":"30-day real-time historical volatility","groups":["G4"],"id":"HISTORICAL_VOL_PERCENT"}]`)
   // export on click somewhere with: chrome.storage.local.get(null, (data) => console.log(data))
