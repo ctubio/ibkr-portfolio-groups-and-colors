@@ -409,6 +409,8 @@ const speaker = async (e, target) => {
     e.stopPropagation();
     e.preventDefault();
   }
+  clearTimeout(speakTimeout);
+  window.speechSynthesis.cancel();
   var data = await promiseWrapper('speakNet', getStorage);
   if (!data['speakNet']) data['speakNet'] = "[]";
   data['speakNet'] = JSON.parse(data['speakNet']);
@@ -418,6 +420,11 @@ const speaker = async (e, target) => {
     const indexConid = data['speakNet'].indexOf(conid);
     if (indexConid == -1) data['speakNet'].push(conid);
     else data['speakNet'].splice(indexConid, 1);
+    data['speakNet'].sort((a,b) => {
+      if (a=='net') return -1;
+      if (b=='net') return 1;
+      return document.querySelector('td[conid="'+a+'"] span[dir]').innerText.trim().localeCompare(document.querySelector('td[conid="'+b+'"] span[dir]').innerText.trim());
+    });
 
     var encodedData = {};
     encodedData['speakNet'] = JSON.stringify(data['speakNet']);
@@ -431,45 +438,37 @@ const speaker = async (e, target) => {
   }
 
   if (data['speakNet'].length) {
-    const speakPrices = async () => {
-      var next = await promiseWrapper('speakNet', getStorage);
-      if (!next['speakNet']) next['speakNet'] = "[]";
-      next['speakNet'] = JSON.parse(next['speakNet']);
-      if (!next['speakNet'].length) return;
-      var msgs = "";
-      next['speakNet'].forEach((voice) => {
-        if (voice == 'net') {
-          var amt = document.querySelector(speakSelector);
-          if (amt) msgs = parseInt(amt.innerText.replace(",","").replace(".",","))+'\n' + msgs;
-        } else {
-          var text = document.querySelector('div.ptf-positions table tr td[conid="'+voice+'"]');
-          var price = document.querySelector('div.ptf-positions table tr:has(td[conid="'+voice+'"]) span[fix="31"]');
-          if (text && price) msgs += text.innerText.split("").join(" ") + ": " + price.innerText.replace(",","").replace(".",",")+'\n';
-        }
-      });
-      if (!msgs.length || msgs.indexOf("NaN") != -1) {
-        setTimeout(speakPrices, 3000);
+    var msgIndex = 0;
+    const speakMsg = () => {
+      console.log(data['speakNet']);
+      // if (!data['speakNet'].length || msgIndex == data['speakNet'].length) return
+      var msg = "";
+      const voice = data['speakNet'][msgIndex++];
+      if (voice == 'net') {
+        var amt = document.querySelector(speakSelector);
+        if (amt) msg = parseInt(amt.innerText.replace(",","").replace(".",","));
+      } else {
+        var text = document.querySelector('div.ptf-positions table tr td[conid="'+voice+'"]');
+        var price = document.querySelector('div.ptf-positions table tr:has(td[conid="'+voice+'"]) span[fix="31"]');
+        if (text && price) msg = text.innerText.split("").join(" ") + ": " + price.innerText.replace(",","").replace(".",",");
+        if (data['speakNet'].length == 1)
+          msg = msg.substring(msg.indexOf(":")+2);
+      }
+      if (!msg) {
+        msgIndex = 0;
+        setTimeout(speakMsg, 3000);
         return
       }
-      var msgsList = msgs.trim().split('\n');
-      msgsList.sort();
-      if (msgsList.length == 1 && msgsList[0].indexOf(":") > -1)
-        msgsList[0] = msgsList[0].substring(msgsList[0].indexOf(":")+2);
-      var msgIndex = 0;
-      const speakMsg = () => {
-        var syn = new SpeechSynthesisUtterance(msgsList[msgIndex++]);
-        syn.onend = () => {
-          clearTimeout(speakTimeout);
-          if (msgIndex == msgsList.length)
-            speakTimeout = setTimeout(speakPrices, 21000);
-          else speakTimeout = setTimeout(speakMsg, 3000);
-        };
-        window.speechSynthesis.speak(syn);
+      var syn = new SpeechSynthesisUtterance(msg);
+      syn.onend = () => {
+        if (msgIndex == data['speakNet'].length) {
+          msgIndex = 0;
+          speakTimeout = setTimeout(speakMsg, 21000);
+        } else speakTimeout = setTimeout(speakMsg, 3000);
       };
-      speakMsg();
+      window.speechSynthesis.speak(syn);
     };
-    window.speechSynthesis.cancel();
-    setTimeout(speakPrices, 1);
+    setTimeout(speakMsg, 1);
     var rules = "";
     applyCssRule('speakNet', 4, speakSelector+'::before {content: "";}');
     applyCssRule('speakNet', 5, 'div.ptf-positions table td._tbsid::before {content: "";}');
@@ -742,8 +741,8 @@ const css = () => {
   sheet.insertRule('div#minicharts > div {z-index: 3;position: fixed;position-area: center right;}', sheet.cssRules.length);
   sheet.insertRule('div#minicharts > div[data-title]:hover::after {content: attr(data-title);box-shadow:color-mix(in srgb, rgb(0,0,0) 30%,transparent) 0 1px 2px 0, color-mix(in srgb, rgb(0,0,0) 15%,transparent) 0 2px 6px 2px;padding:5px 8px;font-feature-settings: "tnum";font-variant-numeric: tabular-nums;display:block;background-color:#292a2d;border-radius:8px;font-size:19.36px;color:white;font-family:Proxima Nova,Verdana,Arial,sans-serif;position: absolute;top: -100%;left: 10px;white-space: pre;}', sheet.cssRules.length);
   sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}', sheet.cssRules.length);
-  sheet.insertRule(tv + 'div.quote-nav, ' + tv + 'div.cp-quote-tabs, ' + tv + 'header, ' + tv + 'footer {display:none!important;}', sheet.cssRules.length);
-  sheet.insertRule(fund + 'div.quote-nav, ' + fund + 'div.border-start, ' + fund + 'div.cp-quote-tabs, ' + fund + 'header, ' + fund + 'footer {display:none!important;}', sheet.cssRules.length);
+  // sheet.insertRule(tv + 'div.quote-nav, ' + tv + 'header, ' + tv + 'footer {display:none!important;}', sheet.cssRules.length);
+  // sheet.insertRule(fund + 'div.quote-nav, ' + fund + 'div.border-start, ' + fund + 'div.cp-quote-tabs, ' + fund + 'header, ' + fund + 'footer {display:none!important;}', sheet.cssRules.length);
 };
 
 (new MutationObserver((records) => {
