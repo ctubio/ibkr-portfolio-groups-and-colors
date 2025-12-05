@@ -344,15 +344,14 @@ const mutation = async (records) => {
       var num = r.addedNodes[0].data.replace('C', '').replace('F', '');
       if (!Number(num)) continue;
 
-      ((parentNode) => {
+      ((classList) => {
         setTimeout(async () => {
-          parentNode.classList.remove("fade-opacity");
-          parentNode.style.opacity = 0.9;
+          classList.remove("fade-opacity");
           requestAnimationFrame(() => {
-            parentNode.classList.add("fade-opacity");
+            classList.add("fade-opacity");
           });
         }, 1);
-      })(r.target.parentNode);
+      })(r.target.parentNode.classList);
     }
 
     else if (r.target.nodeName == "SPAN" && r.addedNodes[0].nodeName == "#text" && r.target.classList.contains('fs6') && !r.target.classList.contains('text-semibold') && r.target.parentNode && r.target.parentNode.parentNode && r.target.parentNode.parentNode.classList.contains("account-alias__container__account-values")) {
@@ -381,7 +380,7 @@ const mutation = async (records) => {
       (r.addedNodes[0].nodeName == "TR" && r.target.nodeName == "TBODY" && r.target.parentNode && r.target.parentNode.id == "cp-ptf-positions-table0")
       || (r.addedNodes[0].nodeName == "TBODY" && r.target.nodeName == "TABLE" && r.target.id == "cp-ptf-positions-table0")
     ) {
-      const conid = r.addedNodes[0].getElementsByTagName("td")[1]?.attributes.conid?.value;
+      const conid = r.addedNodes[0].querySelector("td[conid]")?.attributes.conid?.value;
       if (!conid) continue;
 
       ((conid) => {
@@ -624,49 +623,33 @@ const links = () => {
   if (!button) {
     setTimeout(links, 3000);
   } else if (button.innerText != "Today") {
-    const calendar = document.createElement("button");
-    calendar.type = 'button';
-    calendar.innerHTML = "<span>Today</span>";
-    calendar.className = button.className.replace(' tws-skeleton', '');
-    button.after(calendar);
-    calendar.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.open('https://www.investing.com/dividends-calendar/', '_blank', "width=1800,height=760,top=230,left=550");
-    });
-
-    const bets = document.createElement("button");
-    bets.type = 'button';
-    bets.innerHTML = "<span>WSB</span>";
-    bets.className = button.className.replace(' tws-skeleton', '');
-    button.after(bets);
-    bets.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.open('https://www.reddit.com/r/wallstreetbets/', '_blank', "width=1800,height=760,top=230,left=550");
-    });
-
-    const map = document.createElement("button");
-    map.type = 'button';
-    map.innerHTML = "<span>Map</span>";
-    map.className = button.className.replace(' tws-skeleton', '');
-    button.after(map);
-    map.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.open('https://finviz.com/map.ashx?t=sec', '_blank', "width=1800,height=760,top=230,left=550");
-    });
-
-    const trades = document.createElement("button");
-    trades.type = 'button';
-    trades.innerHTML = "<span>Trades</span>";
-    trades.className = button.className.replace(' tws-skeleton', '');
-    button.after(trades);
-    trades.addEventListener("click", (e) => {
-      e.stopPropagation();
-      e.preventDefault();
-      window.location.assign('#/orders/trades');
-    });
+    [{
+      text: "Today",
+      site: () => window.open('https://www.investing.com/dividends-calendar/', '_blank', "width=1800,height=760,top=230,left=550")
+    },{
+      text: "WSB",
+      site: () => window.open('https://www.reddit.com/r/wallstreetbets/', '_blank', "width=1800,height=760,top=230,left=550")
+    },{
+      text: "Scan",
+      site: () => window.open('https://stockscan.io/stocks/', '_blank', "width=1800,height=760,top=230,left=550")
+    },{
+      text: "Map",
+      site: () => window.open('https://finviz.com/map.ashx?t=sec', '_blank', "width=1800,height=760,top=230,left=550")
+    },{
+      text: "Trades",
+      site: () => window.location.assign('#/orders/trades')
+    }].forEach((attr) => {
+      const btn = document.createElement("button");
+      btn.type = 'button';
+      btn.innerHTML = '<span>' + attr.text + ' </span>';
+      btn.className = button.className.replace(' tws-skeleton', '');
+      button.after(btn);
+      btn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        attr.site()
+      });
+    })
   }
 };
 
@@ -675,7 +658,7 @@ const css = () => {
   const ptf = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
   const tv = 'body:has(div#tv-chart) ';
   const fund = 'body:has(section.fundamentals-app) ';
-  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + ptf + ' div.pane-subactions > div:nth-child(4), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + ptf + ' .order-pane .odr-sbmt .flex-flex, ' + ptf + ' .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section {display:none!important;}');
+  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + ptf + ' div.pane-subactions > div:nth-child(4), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + ptf + ' .order-pane .odr-sbmt .flex-flex, ' + ptf + ' .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' .portfolio-summary__header .expand-button, .ib-row.cp-footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section {display:none!important;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], ' + ptf + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"], ' + ptf + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7671"] span, ' + ptf + ' div.ptf-positions table td div[fix="7287"] span, ' + ptf + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}');
@@ -707,6 +690,7 @@ const css = () => {
   sheet.insertRule(ptf + "div.ib-bar3__trade-btn-container {top: -20px;position: relative;}");
   sheet.insertRule(ptf + "div.sl-search-results {zoom: 1.2;}");
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}');
+  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.9;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7681"] span, ' + ptf + 'div.ptf-positions table td div[fix="7678"] span, ' + ptf + 'div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7290"] span{color: #70ccc8;}');
   sheet.insertRule(ptf + "div.ptf-positions table {min-width: 2343px!important;}");
@@ -740,8 +724,10 @@ const css = () => {
   sheet.insertRule('div#minicharts > div {z-index: 3;position: fixed;position-area: center right;}');
   sheet.insertRule('div#minicharts > div[data-title]:hover::after {content: attr(data-title);box-shadow:color-mix(in srgb, rgb(0,0,0) 30%,transparent) 0 1px 2px 0, color-mix(in srgb, rgb(0,0,0) 15%,transparent) 0 2px 6px 2px;padding:5px 8px;font-feature-settings: "tnum";font-variant-numeric: tabular-nums;display:block;background-color:#292a2d;border-radius:8px;font-size:19.36px;color:white;font-family:Proxima Nova,Verdana,Arial,sans-serif;position: absolute;top: -100%;left: 10px;white-space: pre;}');
   sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}');
-  // sheet.insertRule(tv + 'div.quote-nav, ' + tv + 'header, ' + tv + 'footer {display:none!important;}');
-  // sheet.insertRule(fund + 'div.quote-nav, ' + fund + 'div.border-start, ' + fund + 'div.cp-quote-tabs, ' + fund + 'header, ' + fund + 'footer {display:none!important;}');
+  sheet.insertRule('.portfolio-summary__list .expand-offset {padding-inline-end:0px;}');
+  sheet.insertRule('.portfolio-summary__header {padding-right:0px;}');
+  sheet.insertRule(tv + 'div.quote-nav {display:none!important;}');
+  sheet.insertRule(fund + 'div.quote-nav {display:none!important;}');
 };
 
 (new MutationObserver((records) => {
