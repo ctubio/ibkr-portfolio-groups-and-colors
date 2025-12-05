@@ -244,13 +244,13 @@ async function setNextDisplayForTicker(conid) {
   await enhanceCounter();
 }
 
-var counter;
+var counter = false;
 async function enhanceCounter() {
   if (!counter) {
     counter = document.getElementById('cp-ptf-positions-table0')?.parentNode.parentNode.getElementsByTagName('h3')[0];
     if (counter && counter.innerText.split(" ").length == 2) {
       counter.innerHTML = counter.innerText.split(" ").slice(0, 2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView"></span>';
-    }
+    } else counter = false;
   }
 
   var collapsed = 0;
@@ -438,8 +438,6 @@ const speaker = async (e, target) => {
   if (data['speakNet'].length) {
     var msgIndex = 0;
     const speakMsg = () => {
-      console.log(data['speakNet']);
-      // if (!data['speakNet'].length || msgIndex == data['speakNet'].length) return
       var msg = "";
       const voice = data['speakNet'][msgIndex++];
       if (voice == 'net') {
@@ -531,6 +529,20 @@ const colors = async (e, target) => {
   if (e.detail === 2) {
     clearTimeout(timeOutDoubleClick);
     await setNextDisplayForTicker(target.closest('td[conid]').attributes.conid.value);
+  }
+};
+
+const enter = async (e, target) => {
+  if (e.keyCode != 13) return
+  const ticket = document.querySelector('.order-ticket__sidebar');
+  const pane = document.querySelector('.order-pane');
+  if (!target || target.nodeName != "INPUT" || target.attributes.inputmode?.value != "decimal") return
+  e.stopPropagation();
+  e.preventDefault();
+  if (ticket && ticket.contains(target)) {
+    ticket.querySelector('.order-ticket__sidebar--sticky .border-top button.buy, .order-ticket__sidebar--sticky .border-top button.sell').click();
+  } else if (pane && pane.contains(target)) {
+    pane.querySelector('.ib-row.border-top button.buy, .ib-row.border-top button.sell').click();
   }
 };
 
@@ -697,7 +709,7 @@ const css = () => {
   sheet.insertRule(ptf + "div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1037;zoom: 0.8;left: 869px;}");
   sheet.insertRule(ptf + "div.dashboard__sub-pages .after-16 {margin-bottom: 8px;}");
   sheet.insertRule(ptf + "div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}");
-  sheet.insertRule(ptf + 'div.ptf-positions table td:has(div[fix="7288"]).bg15-accent span {font-size: inherit;}');
+  sheet.insertRule(ptf + 'div.ptf-positions table td:has(div[fix="7288"]).bg15-accent span, #cp-ptf-positions-table0 tr > :nth-child(4) span, ' + ptf + 'div.ptf-positions table td[conid].bg15-accent span[dir] {font-size: inherit;}');
   sheet.insertRule(ptf + "div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 9999;width: 888px;}");
   sheet.insertRule(ptf + 'div.ptf-positions table tr > td:nth-child(3) div, ' + ptf + ' div.ptf-positions table td.bg15-accent {overflow:visible;}');
   sheet.insertRule(ptf + 'div.ptf-positions h3, ' + ptf + ' .quote-mini-chart .highcharts-container {cursor:pointer;}');
@@ -746,6 +758,10 @@ window.navigation.addEventListener("navigate", async () => {
     links();
     await notes();
   }, 500);
+});
+
+window.addEventListener("keyup", async (e) => {
+  enter(e, e.target);
 });
 
 document.addEventListener("click", async (e) => { // console.log(e); } );
