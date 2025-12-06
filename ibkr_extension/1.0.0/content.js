@@ -89,11 +89,10 @@ const sparkline = (conid) => {
   mini.append(canvas);
 
   const ctx = canvas.getContext("2d");
-  const gradient = ctx.createLinearGradient(0, 0, 0, 100);
-  gradient.addColorStop(0, "rgb(1, 166, 1, 0.7)");
-  gradient.addColorStop(0.20, "rgb(255, 165, 0, 0.7)");
-  gradient.addColorStop(0.25, "rgb(255, 0, 0, 0.7)");
-  ctx.strokeStyle = gradient;
+  ctx.strokeStyle = ctx.createLinearGradient(0, 0, 0, 100);
+  ctx.strokeStyle.addColorStop(0, "rgb(1, 166, 1, 0.7)");
+  ctx.strokeStyle.addColorStop(0.20, "rgb(255, 165, 0, 0.7)");
+  ctx.strokeStyle.addColorStop(0.25, "rgb(255, 0, 0, 0.7)");
   ctx.lineWidth = 3;
 
   return (price) => {
@@ -104,9 +103,9 @@ const sparkline = (conid) => {
     if (data.length > 10)
       data = data.slice(-10);
 
-    const dates = [];
-    const prices = [];
-    const titles = [];
+    var dates = [];
+    var prices = [];
+    var titles = "";
     data.forEach((x) => {
       if (!dates[0] || +dates[0] > +x.date)
         dates[0] = x.date;
@@ -116,7 +115,7 @@ const sparkline = (conid) => {
         prices[0] = x.price;
       if (!prices[1] || prices[1] < x.price)
         prices[1] = x.price;
-      titles.push(x.date.toISOString().slice(14,19) + "  " + x.price.toFixed(2));
+      titles = "\n" + x.date.toISOString().slice(14,19) + "  " + x.price.toFixed(2) + titles;
     });
 
     sparkX.domain(dates);
@@ -125,7 +124,7 @@ const sparkline = (conid) => {
     ctx.clearRect(0, 0, sparkWidth, sparkHeight);
     ctx.stroke(new Path2D(sparkPath(data)));
 
-    mini.dataset.title = titles.reverse().join("\n");
+    mini.dataset.title = titles.trim();
   };
 };
 
@@ -729,7 +728,7 @@ const css = () => {
   sheet.insertRule('div.quote-main div.quote-symprice h1 div {cursor: pointer;}');
   sheet.insertRule('div.quote-main div.quote-symprice h1:has(div:hover) {text-decoration: underline;}');
   sheet.insertRule('div#minicharts > div {z-index: 3;position: fixed;position-area: center right;}');
-  sheet.insertRule('div#minicharts > div[data-title]:hover::after {content: attr(data-title);box-shadow:color-mix(in srgb, rgb(0,0,0) 30%,transparent) 0 1px 2px 0, color-mix(in srgb, rgb(0,0,0) 15%,transparent) 0 2px 6px 2px;padding:5px 8px;font-feature-settings: "tnum";font-variant-numeric: tabular-nums;display:block;background-color:#292a2d;border-radius:8px;font-size:19.36px;color:white;font-family:Proxima Nova,Verdana,Arial,sans-serif;position: absolute;top: -100%;left: 10px;white-space: pre;}');
+  sheet.insertRule('div#minicharts > div[data-title]:hover::after {content: attr(data-title);pointer-events: none;box-shadow:color-mix(in srgb, rgb(0,0,0) 30%,transparent) 0 1px 2px 0, color-mix(in srgb, rgb(0,0,0) 15%,transparent) 0 2px 6px 2px;padding:5px 8px;font-feature-settings: "tnum";font-variant-numeric: tabular-nums;display:block;background-color:#292a2d;border-radius:8px;font-size:19.36px;color:white;font-family:Proxima Nova,Verdana,Arial,sans-serif;position: absolute;top: -100%;left: 10px;white-space: pre;}');
   sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}');
   sheet.insertRule('.portfolio-summary__list .expand-offset {padding-inline-end:0px;}');
   sheet.insertRule('.portfolio-summary__header {padding-right:0px;}');
