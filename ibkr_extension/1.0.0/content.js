@@ -169,14 +169,31 @@ function applyColorForTicker(conid, color) {
   applyCssRule(conid, 0, 'td[conid="'+conid+'"] { color:'+(color?color:'inherit')+'; }');
 }
 
+var growth = [];
+var dividends = [];
+var visible = [];
 function applyDisplayForTicker(conid, display) {
   applyCssRule(conid, 1, 'tbody:has(td[conid="'+conid+'"]) { display:'+display+'; }');
   applyCssRule(conid, 2, 'div#minichart_'+conid+' { display:'+(display == 'none' ? 'display' : 'inline-block')+';position-anchor:--sparkline_'+conid+'; }');
   applyCssRule(conid, 3, 'div.ptf-positions table td[conid="'+conid+'"] span[fix="7221"] {anchor-name: --sparkline_'+conid+';}');
+
+  var visibleIndex = visible.indexOf(conid);
+  if (display != 'none') {
+    if (visibleIndex == -1) visible.push(conid);
+  } else if (visibleIndex > -1)
+    visible.splice(visibleIndex, 1);
 }
 
 function applyOpacityForTicker(conid, opacity) {
   applyCssRule(conid, 4, 'td[conid="'+conid+'"] span { opacity:'+(opacity == 'none' ? '0.7' : '1')+'; }');
+
+  if (growth.indexOf(conid) == -1)
+    growth.push(conid);
+  var dividendsIndex = dividends.indexOf(conid);
+  if (opacity == 'none') {
+    if (dividendsIndex == -1) dividends.push(conid);
+  } else if (dividendsIndex > -1)
+    dividends.splice(dividendsIndex, 1);
 }
 
 async function setColorForTicker(conid) {
@@ -244,39 +261,24 @@ async function setNextDisplayForTicker(conid) {
   await enhanceCounter();
 }
 
-var counter = false;
+var counter = [];
 async function enhanceCounter() {
-  if (!counter) {
-    counter = document.getElementById('cp-ptf-positions-table0')?.parentNode.parentNode.getElementsByTagName('h3')[0];
-    if (counter && counter.innerText.split(" ").length == 2) {
-      counter.innerHTML = counter.innerText.split(" ").slice(0, 2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView"></span>';
-    } else counter = false;
+  if (!counter.length) {
+    var h3 = document.getElementById('cp-ptf-positions-table0')?.parentNode.parentNode.getElementsByTagName('h3')[0];
+    if (h3 && h3.innerText.split(" ").length == 2) {
+      h3.innerHTML = h3.innerText.split(" ").slice(0, 2).join('<span id="toggleCustomViewTotal"> </span>') + ' <span id="toggleCustomView"></span>';
+      counter = [document.getElementById('toggleCustomViewTotal'), document.getElementById('toggleCustomView')];
+    } else counter = [];
   }
-
-  var collapsed = 0;
-  var total = 0;
-  var timeout;
 
   var view = await promiseWrapper('viewMode', getStorage);
   if (!view['viewMode']) view['viewMode'] = 0;
 
-  document.querySelectorAll('td[conid]').forEach(async (td) => {
-    const conid = td.attributes.conid.value;
-    if (!conid) return;
-
-    total++;
-    const data = await promiseWrapper(conid+'_view', getStorage);
-    collapsed += +(data[conid+'_view'] == 'none');
-
-    clearTimeout(timeout);
-    timeout = setTimeout(() => {
-      document.getElementById('toggleCustomViewTotal').innerText = ' '+total.toString()+' ';
-      document.getElementById('toggleCustomView').innerHTML = 'of <span class="'+(view['viewMode'] != 2?'fg-accent':'')+'"><strong>'
-          + (total-collapsed).toString()
-          + '</strong> Growth Positions</span> and <span class="'+(view['viewMode'] != 1?'fg-accent':'')+'"><strong>'
-          + collapsed.toString()+'</strong> High-Yield Dividend Positions</span>';
-    }, 100);
-  });
+  counter[0].innerText = ' '+growth.length.toString()+' ';
+  counter[1].innerHTML = 'of <span class="'+(view['viewMode'] != 2?'fg-accent':'')+'"><strong>'
+      + (growth.length-dividends.length).toString()
+      + '</strong> Growth Positions</span> and <span class="'+(view['viewMode'] != 1?'fg-accent':'')+'"><strong>'
+      + dividends.length.toString()+'</strong> High-Yield Dividend Positions</span>';
 }
 
 function transformCopyPaste(val) {
@@ -304,7 +306,6 @@ function transformCopyPaste(val) {
   return '';
 }
 
-var timeOut;
 var charts = {};
 const mutation = async (records) => {
   for (const r of records) {
@@ -313,10 +314,8 @@ const mutation = async (records) => {
     if (r.target.parentNode && r.target.parentNode.attributes.fix && r.target.parentNode.attributes.fix.value == '31') {
       const num = parseFloat(r.addedNodes[0].data.replace(',', '').replace('C', '').replace('F', ''));
       if (!Number(num)) continue;
-      const td = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1];
-      if (!td.checkVisibility()) continue;
-      const conid = td.attributes.conid.value;
-      if (!conid) continue;
+      const conid = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1].attributes.conid?.value;
+      if (!conid || visible.indexOf(conid) == -1) continue;
       ((conid, num) => {
         setTimeout(() => {
           if (!charts[conid]) charts[conid] = sparkline(conid);
@@ -363,7 +362,7 @@ const mutation = async (records) => {
       if (!r.target.nextSibling.classList.contains(r.target.className))
         r.target.nextSibling.className = r.target.className;
       ((data, span, next) => {
-        timeOut = setTimeout(() => {
+        setTimeout(() => {
           if (span && span.innerText && data) {
             var amtdiff = ((100/parseFloat(span.innerText.replace(',', '')))*parseFloat(data.replace(',', ''))).toFixed(2);
             if (parseFloat(amtdiff) > 0)
@@ -387,11 +386,7 @@ const mutation = async (records) => {
         setTimeout(async () => {
           await setColorForTicker(conid);
           await setDisplayForTicker(conid);
-
-          clearTimeout(timeOut);
-          timeOut = setTimeout(async () => {
-            await enhanceCounter();
-          }, 333);
+          await enhanceCounter();
         }, 1);
       })(conid);
     }
@@ -505,13 +500,13 @@ const groups = async (target) => {
     }, 13000)
   }
 
-  setTimeout(async () => { await enhanceCounter(); }, 1);
-
   document.querySelectorAll('td[conid]').forEach(async (td) => {
     await setDisplayForTicker(td.attributes.conid.value);
   });
 
-  await promiseWrapper(view, setStorage)
+  await promiseWrapper(view, setStorage);
+
+  await enhanceCounter();
 };
 
 var timeOutDoubleClick;
@@ -738,6 +733,7 @@ const css = () => {
   sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}');
   sheet.insertRule('.portfolio-summary__list .expand-offset {padding-inline-end:0px;}');
   sheet.insertRule('.portfolio-summary__header {padding-right:0px;}');
+  // sheet.insertRule('._con .bg15-accent {background-color: rgb(115 68 9 / 25%);}');
   sheet.insertRule(tv + 'div.quote-nav {display:none!important;}');
   sheet.insertRule(fund + 'div.quote-nav {display:none!important;}');
 };
