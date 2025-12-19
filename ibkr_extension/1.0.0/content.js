@@ -568,9 +568,9 @@ const chart = (e, target) => {
 const fundamentals = (target) => {
   const h1 = document.querySelector('div.quote-main div.quote-symprice h1');
   if (!target || !h1 || !h1.contains(target)) return
-  const conid = document.querySelector('td[conid].bg15-accent').attributes.conid.value;
-  if (!conid) return
-  window.open("https://www.interactivebrokers.ie/portal/#/quote/"+conid+"/fundamentals/landing", "_blank", "width=1500,height=800,top=200,left=600");
+  const ticker = document.querySelector('.quote-symbol div');
+  if (!ticker) returnreturn
+  window.open("https://www.benzinga.com/quote/" + ticker.innerText, "_blank", "width=1500,height=800,top=200,left=600");
 };
 
 const orders = (target) => {
@@ -671,7 +671,7 @@ const css = () => {
   const ptf = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
   const tv = 'body:has(div#tv-chart) ';
   const fund = 'body:has(section.fundamentals-app) ';
-  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + ptf + ' div.pane-subactions > div:nth-child(4), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), ' + ptf + ' .order-pane .odr-sbmt .flex-flex, ' + ptf + ' .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' .portfolio-summary__header .expand-button, .ib-row.cp-footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section {display:none!important;}');
+  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ' + ptf + ' div.pane-subactions > div:nth-child(4), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' .portfolio-summary__header .expand-button, .ib-row.cp-footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section {display:none!important;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], ' + ptf + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"], ' + ptf + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}');
   sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7671"] span, ' + ptf + ' div.ptf-positions table td div[fix="7287"] span, ' + ptf + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}');
