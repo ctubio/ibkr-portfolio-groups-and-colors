@@ -677,7 +677,7 @@ body[hack] .bar3-logo,
 body[hack]
   .portfolio-summary__header
   .expand-button,
-.ib-row.cp-footer,
+body[hack] .ib-row.cp-footer,
 body[hack]
   div.nav-container
   button[aria-label="Research"],
@@ -696,10 +696,10 @@ body[hack]
   + button,
 body[hack] .one-head-menu section,
 .order-ticket__sidebar--expanded form > div:last-child,
-div.ib-row:has(.gifs-disclaimer),
-div.flex-fixed:has(.feedbackApp),
-.order-ticket__sidebar--container div.insety-8:has(.text-medium),
-div.before-16:has(.order-ticket__search),
+div.order-pane div.insetx-16,
+div.order-ticket__sidebar--sticky div.flex-fixed,
+div.order-ticket__sidebar--container > div > div.insetx-16.insety-8,
+div.order-ticket__sidebar--container > div > div.insetx-16 > div.before-16:first-child,
 .order-ticket__sidebar--expanded
   form
   > ._formo
@@ -759,8 +759,45 @@ body[hack] #cp-header div.nav-container {
   width: 65%;
 }`);
   sheet.insertRule(`
+body[hack] nav.nav-items-container {
+    top: 20px;
+    position: relative;
+}`);
+  sheet.insertRule(`
 body[hack] .tws-shortcuts {
   margin-top: 150px;
+}`);
+  sheet.insertRule(`
+body[hack] div.nav-container button[aria-label="Trade"].nav-item {
+  font-size: 0px;
+  position: relative;
+  left: 212px;
+}`);
+  sheet.insertRule(`
+body[hack] .after-32 {
+  margin-bottom: 0px !important;
+}`);
+  sheet.insertRule(`
+body[hack] .dashboard__sub-pages .insetx-24 {
+  padding-left: 0px !important;
+  padding-right: 0px;
+}`);
+  sheet.insertRule(`
+body[hack] div.dashboard__sub-pages > div > div._tabs2 {
+  background-color: #1d212b;
+  position: absolute;
+  top: 0px;
+  z-index: 1030;
+  zoom: 0.8;
+  left: 869px;
+}`);
+  sheet.insertRule(`
+body[hack] div.dashboard__sub-pages .after-16 {
+  margin-bottom: 8px;
+}`);
+  sheet.insertRule(`
+div.side-panel {
+  max-width: 328px !important;
 }`);
   sheet.insertRule(`
 .pos-widget table td span.fg-buy,
@@ -799,21 +836,6 @@ span#toggleCustomView {
   font-weight: normal;
 }`);
   sheet.insertRule(`
-div.nav-container button[aria-label="Trade"].nav-item {
-  font-size: 0px;
-  position: relative;
-  left: 212px;
-}`);
-  sheet.insertRule(`
-.after-32 {
-  margin-bottom: 0px !important;
-}`);
-  sheet.insertRule(`
-.dashboard__sub-pages .insetx-24 {
-  padding-left: 0px !important;
-  padding-right: 0px;
-}`);
-  sheet.insertRule(`
 div.quote-main div.quote-symprice h1 div.quote-symbol:hover {
   text-decoration: underline;
 }`);
@@ -822,23 +844,6 @@ div.quote-main div.quote-symprice h1 div.quote-symbol:hover {
   font-size: 1.125rem;
   line-height: 24px;
   font-weight: 600;
-}`);
-  sheet.insertRule(`
-div.side-panel {
-  max-width: 328px !important;
-}`);
-  sheet.insertRule(`
-div.dashboard__sub-pages > div > div._tabs2 {
-  background-color: #1d212b;
-  position: absolute;
-  top: 0px;
-  z-index: 1030;
-  zoom: 0.8;
-  left: 869px;
-}`);
-  sheet.insertRule(`
-div.dashboard__sub-pages .after-16 {
-  margin-bottom: 8px;
 }`);
   sheet.insertRule(`
 .portfolio-summary__list
