@@ -568,7 +568,7 @@ const chart = (e, target) => {
 };
 
 const fundamentals = (target) => {
-  const h1 = document.querySelector('div.quote-main div.quote-symprice h1');
+  const h1 = document.querySelector('div.quote-main div.quote-symprice h1 .quote-symbol');
   if (!target || !h1 || !h1.contains(target)) return
   const ticker = document.querySelector('.quote-symbol div');
   if (!ticker) returnreturn
@@ -633,6 +633,473 @@ const notes = async () => {
   }
 };
 
+const css = (loading) => {
+  if (window.location.href.indexOf("/dashboard/positions") == -1)
+    document.body.removeAttribute('hack');
+  else
+    document.body.setAttribute('hack', '');
+
+  if (!loading) return
+
+  const sheet = makeStyle('nice');
+  sheet.insertRule(`
+body[hack]
+  #cp-header
+  div.one-head
+  div.one-head-menu
+  > button:nth-child(2),
+body[hack] div.side-panel__toggle,
+body[hack]
+  #cp-header
+  div.one-head
+  div.one-head-menu
+  > button:nth-child(1),
+body[hack]
+  #cp-header
+  div.nav-container
+  div.ib-bar3__trade-btn-container
+  > div.flex-flex.middle,
+._btngroup.wgrow.pcon-widget:has(svg),
+body[hack]
+  div.pane-subactions
+  > div.pane-subaction-button:nth-child(4),
+body[hack]
+  div.pane-subactions
+  > div.pane-subaction-button:nth-child(3),
+body[hack]
+  div.pane-subactions
+  > div:has(button[id="recurringButton"]),
+.order-pane .odr-sbmt .flex-flex,
+.order_ticket__submit-view > .flex-row,
+body[hack]
+  button.ptf-positions__expand-collapse-btn,
+body[hack] .bar3-logo,
+body[hack]
+  .portfolio-summary__header
+  .expand-button,
+.ib-row.cp-footer,
+body[hack]
+  div.nav-container
+  button[aria-label="Research"],
+body[hack]
+  div.nav-container
+  button[aria-label="Transfer & Pay"],
+body[hack]
+  div.nav-container
+  button[aria-label="Education"],
+body[hack]
+  div.nav-container
+  button[aria-label="Performance & Reports"],
+body[hack]
+  .one-head-menu
+  section
+  + button,
+body[hack] .one-head-menu section,
+.order-ticket__sidebar--expanded form > div:last-child,
+div.ib-row:has(.gifs-disclaimer),
+div.flex-fixed:has(.feedbackApp),
+.order-ticket__sidebar--container div.insety-8:has(.text-medium),
+div.before-16:has(.order-ticket__search),
+.order-ticket__sidebar--expanded
+  form
+  > ._formo
+  .order-ticket__sidebar--grid
+  div:nth-child(6):has(._drop),
+.order-ticket__sidebar--expanded
+  form
+  > ._formo
+  .order-ticket__sidebar--grid
+  div:nth-child(7):has(._drop),
+#orderTicketSellTabPanel
+  form
+  > ._formo
+  .order-ticket__sidebar--grid
+  div:nth-child(5):has(._drop),
+#orderTicketBuyTabPanel
+  form
+  > ._formo
+  .order-ticket__sidebar--grid
+  div:nth-child(2):has(.before-8 ._fldi),
+.order-ticket__attach-orders > p,
+div.before-8:has(span[aria-label="Price Management Algo"]),
+body[hack]
+  div.ptf-positions
+  > div.flex-fixed
+  span.end-4,
+body[hack]
+  .ptf-models
+  .ib-row
+  .ib-col
+  table
+  thead,
+body[hack]
+  .ptf-models
+  .ib-row
+  .ib-col
+  div.flex-fixed,
+body[hack]
+  .ptf-models
+  .ib-row
+  .ib-col
+  table
+  tr
+  td:nth-child(4),
+body[hack]
+  .ptf-models
+  div.ib-row
+  div
+  button._btn.lg {
+  display: none !important;
+}`);
+  sheet.insertRule(`
+body[hack] #cp-header div.nav-container {
+  position: absolute;
+  left: 888px;
+  top: -25px;
+  width: 65%;
+}`);
+  sheet.insertRule(`
+body[hack] .tws-shortcuts {
+  margin-top: 150px;
+}`);
+  sheet.insertRule(`
+.pos-widget table td span.fg-buy,
+.pos-widget table td span.fg-sell {
+  padding: 7px 12px;
+  border-radius: 9px;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+.ptf-models .ib-row.after-64 {
+  margin-bottom: 0px !important;
+}`);
+  sheet.insertRule(`
+.ptf-models .ib-row .ib-col {
+  position: absolute;
+  left: 0px;
+  top: 336px;
+  width: 325px;
+  margin: 0px;
+}`);
+  sheet.insertRule(`
+.ptf-models .ib-row .ib-col table col:nth-child(2) {
+  width: 60% !important;
+}`);
+  sheet.insertRule(`
+.ptf-models .ib-row .ib-col table col:nth-child(3) {
+  width: 40% !important;
+}`);
+  sheet.insertRule(`
+.ptf-models .ib-row .ib-col table col:nth-child(4) {
+  width: 0px !important;
+}`);
+  sheet.insertRule(`
+span#toggleCustomView {
+  font-size: 16px;
+  font-weight: normal;
+}`);
+  sheet.insertRule(`
+div.nav-container button[aria-label="Trade"].nav-item {
+  font-size: 0px;
+  position: relative;
+  left: 212px;
+}`);
+  sheet.insertRule(`
+.after-32 {
+  margin-bottom: 0px !important;
+}`);
+  sheet.insertRule(`
+.dashboard__sub-pages .insetx-24 {
+  padding-left: 0px !important;
+  padding-right: 0px;
+}`);
+  sheet.insertRule(`
+div.quote-main div.quote-symprice h1 div.quote-symbol:hover {
+  text-decoration: underline;
+}`);
+  sheet.insertRule(`
+.quote-bidask-val .fs7 {
+  font-size: 1.125rem;
+  line-height: 24px;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+div.side-panel {
+  max-width: 328px !important;
+}`);
+  sheet.insertRule(`
+div.dashboard__sub-pages > div > div._tabs2 {
+  background-color: #1d212b;
+  position: absolute;
+  top: 0px;
+  z-index: 1030;
+  zoom: 0.8;
+  left: 869px;
+}`);
+  sheet.insertRule(`
+div.dashboard__sub-pages .after-16 {
+  margin-bottom: 8px;
+}`);
+  sheet.insertRule(`
+.portfolio-summary__list
+  > .portfolio-summary__list__item:nth-last-child(
+    1 of .portfolio-summary__list__item
+  )
+  span.numeric {
+  color: #a754d4;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+div.bid-ask-yield span {
+  font-size: 1.325rem;
+  line-height: 17px;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+div.quote-bidask-val {
+  font-size: 1.325rem;
+  line-height: 24px;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+div.bid-ask-container span {
+  font-size: 1.425rem;
+  font-weight: 600;
+}`);
+  sheet.insertRule(`
+.pos-widget table td span.fg-buy {
+  background-color: rgb(7, 55, 99);
+}`);
+  sheet.insertRule(`
+.pos-widget table td span.fg-sell {
+  background-color: rgb(99, 7, 7);
+}`);
+  sheet.insertRule(`
+.order-info__block input[name="quantity"],
+.order-info__block input.numeric,
+.order-ticket__sidebar--grid input[name="quantity"],
+.order-ticket__sidebar--grid input[name="auxPrice"],
+.order-ticket__sidebar--grid input[name="price"] {
+  font-weight: 600;
+  font-size: 30px;
+}`);
+  sheet.insertRule(`
+div.side-panel__content button.pill {
+  color: rgb(189, 204, 112);
+}`);
+  sheet.insertRule(`
+div.quote-main div.quote-symprice h1 div.quote-symbol {
+  cursor: pointer;
+}`);
+  sheet.insertRule(`
+.order-pane .odr-sbmt .outsety-32,
+.order-pane .odr-sbmt .fs7,
+.pos-widget table td,
+.order_ticket__submit-view .order_ticket__status-text,
+.order_ticket__submit-view__compact-table td,
+.order-ticket__order-preview-sidebar p,
+.order-ticket__order-preview-sidebar table td {
+  font-size: 130%;
+}`);
+  sheet.insertRule(`
+.order-pane .grow,
+.order-ticket__order-details-pane .grow {
+  flex: none;
+}`);
+  sheet.insertRule(`
+.pos-widget table td span.fg-sell:before {
+  content: "⮟";
+  margin-right: 6px;
+}`);
+  sheet.insertRule(`
+.pos-widget table td span.fg-buy:before {
+  content: "⮝";
+  margin-right: 6px;
+}`);
+  sheet.insertRule(`
+div#minicharts > div {
+  z-index: 3;
+  position: fixed;
+  position-area: left center;
+  right: -166px;
+}`);
+  sheet.insertRule(`
+div#minicharts > div[data-title]:hover::after {
+  content: attr(data-title);
+  position: absolute;
+  top: -100%;
+  left: 10px;
+  pointer-events: none;
+  box-shadow: color-mix(in srgb, rgb(0, 0, 0) 30%, transparent) 0 1px 2px 0,
+  color-mix(in srgb, rgb(0, 0, 0) 15%, transparent) 0 2px 6px 2px;
+  padding: 5px 8px;
+  font-feature-settings: "tnum";
+  font-variant-numeric: tabular-nums;
+  display: block;
+  background-color: #292a2d;
+  border-radius: 8px;
+  font-size: 19.36px;
+  color: white;
+  font-family: Proxima Nova, Verdana, Arial, sans-serif;
+  white-space: pre;
+}`);
+  sheet.insertRule(`
+body {
+  scrollbar-color: hsla(0, 0%, 60%, 0.12) transparent !important;
+}`);
+  sheet.insertRule(`
+.portfolio-summary__list .expand-offset {
+  padding-inline-end: 0px;
+}`);
+  sheet.insertRule(`
+.portfolio-summary__header {
+  padding-right: 0px;
+}`);
+  sheet.insertRule(`
+.order-ticket__sidebar--expanded form > ._formo {
+  padding-top: 16px;
+}`);
+  sheet.insertRule(`
+.order-ticket__price-info > div:nth-child(2),
+.order-ticket__attach-orders {
+  padding-top: 5px;
+}`);
+  sheet.insertRule(`
+textarea#calcNotes {
+  width: 94%;
+  margin-top: 10px;
+  text-transform: uppercase;
+  opacity: 0.4;
+  margin-left: 15px;
+  height: 230px;
+  font-size: 21px;
+  background: transparent;
+  border: 0px !important;
+  outline-width: 0px !important;
+  color: inherit;
+}`);
+  sheet.insertRule(`
+div.ptf-positions col:nth-child(12) {
+  width: 90px !important;
+}`);
+  sheet.insertRule(`
+div.ptf-positions col:nth-child(3),
+div.ptf-positions col:nth-child(8) {
+  width: 100px !important;
+}`);
+  sheet.insertRule(`
+div.ptf-positions td {
+  font-size: 110%;
+}`);
+  sheet.insertRule(`
+div.sl-search-bar {
+  zoom: 0.8;
+  background-color: #150f0c;
+}`);
+  sheet.insertRule(`
+div.sl-search-results {
+  zoom: 1.2;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7743"] {
+  color: #bdcc70;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="86"],
+div.ptf-positions div[fix="84"] {
+  opacity: 0.9;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7681"] span,
+div.ptf-positions div[fix="7678"] span,
+div.ptf-positions div[fix="7679"] span {
+  color: #ae7102;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7290"] span {
+  color: #70ccc8;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="85"],
+div.ptf-positions div[fix="88"] {
+  color: #3392ff;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7671"] span,
+div.ptf-positions div[fix="7287"] span,
+div.ptf-positions div[fix="7286"] span {
+  color: #ac70cc;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7288"] span {
+  color: #a754d4;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7288"] {
+  position: relative;
+  left: -5px;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="7281"] span,
+div.ptf-positions div[fix="7087"] span,
+div.ptf-positions div[fix="7281"] span,
+div.ptf-positions div[fix="7639"] span {
+  color: #939393;
+}`);
+  sheet.insertRule(`
+div.ptf-positions div[fix="85"],
+div.ptf-positions div[fix="88"],
+div.ptf-positions td._npos {
+  width: 80px !important;
+}`);
+  sheet.insertRule(`
+div.ptf-positions td[conid] {
+  overflow: visible;
+}`);
+  sheet.insertRule(`
+div.ptf-positions table {
+  min-width: 2343px !important;
+}`);
+  sheet.insertRule(`
+div.ptf-positions tr:has(td span[fix="77_raw"]._nneg) span[fix="80"] {
+  color: #e62333;
+}`);
+  sheet.insertRule(`
+div.ptf-positions tr:has(td span[fix="77_raw"]._npos) span[fix="80"] {
+  color: #0eb35b;
+}`);
+  sheet.insertRule(`
+div.ptf-positions > div.flex-fixed {
+  position: absolute;
+  top: 6px;
+  left: 1258px;
+  z-index: 1030;
+  width: 888px;
+}`);
+  sheet.insertRule(`
+div.ptf-positions h3,
+.quote-mini-chart .highcharts-container {
+  cursor: pointer;
+}`);
+  sheet.insertRule(`
+div.ptf-positions h3 {
+  display: inline;
+}`);
+  /*div.ptf-positions td:has(span[fix="83"]) {
+    overflow: visible;
+  }*/
+  /*body:has(div#tv-chart) div.quote-nav {
+    display: none !important;
+  }
+  body:has(section.fundamentals-app) div.quote-nav {
+    display: none !important;
+  }*/
+  /* ._con .bg15-accent {background-color: rgb(115 68 9 / 25%);} */
+  /* body[hack] div.ptf-positions table td div[fix="86"], body[hack]  div.ptf-positions table td div[fix="84"] {opacity:0.6;}
+  @keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}
+  body[hack] .fade-opacity {animation: fadeOpacity 21s linear forwards;}*/
+};
+
 const links = () => {
   const button = document.querySelector('.tws-shortcuts button:last-of-type');
   if (!button) {
@@ -668,92 +1135,12 @@ const links = () => {
   }
 };
 
-const css = () => {
-  const sheet = makeStyle('nice');
-  const ptf = 'body:has(div.ptf-positions):has(div.tws-shortcuts) ';
-  const tv = 'body:has(div#tv-chart) ';
-  const fund = 'body:has(section.fundamentals-app) ';
-  sheet.insertRule(ptf + '#cp-header div.one-head div.one-head-menu > button:nth-child(2), ' + ptf + ' div.side-panel__toggle,' + ptf + ' #cp-header div.one-head div.one-head-menu > button:nth-child(1), ' + ptf + ' #cp-header div.nav-container div.ib-bar3__trade-btn-container > div.flex-flex.middle, ._btngroup.wgrow.pcon-widget:has(svg), ' + ptf + ' div.pane-subactions > div.pane-subaction-button:nth-child(4), ' + ptf + ' div.pane-subactions > div.pane-subaction-button:nth-child(3), ' + ptf + ' div.pane-subactions > div:has(button[id="recurringButton"]), .order-pane .odr-sbmt .flex-flex, .order_ticket__submit-view > .flex-row, ' + ptf + ' button.ptf-positions__expand-collapse-btn, ' + ptf + ' .bar3-logo, ' + ptf + ' .portfolio-summary__header .expand-button, .ib-row.cp-footer, ' + ptf + ' div.nav-container button[aria-label="Research"], ' + ptf + ' div.nav-container button[aria-label="Transfer & Pay"], ' + ptf + ' div.nav-container button[aria-label="Education"], ' + ptf + ' div.nav-container button[aria-label="Performance & Reports"], ' + ptf + ' .one-head-menu section + button, ' + ptf + ' .one-head-menu section, .order-ticket__sidebar--expanded form > div:last-child, div.ib-row:has(.gifs-disclaimer), div.flex-fixed:has(.feedbackApp), .order-ticket__sidebar--container div.insety-8:has(.text-medium), div.before-16:has(.order-ticket__search), .order-ticket__sidebar--expanded form > ._formo .order-ticket__sidebar--grid div:nth-child(6):has(._drop), .order-ticket__sidebar--expanded form > ._formo .order-ticket__sidebar--grid div:nth-child(7):has(._drop), #orderTicketSellTabPanel form > ._formo .order-ticket__sidebar--grid div:nth-child(5):has(._drop),  #orderTicketBuyTabPanel form > ._formo .order-ticket__sidebar--grid div:nth-child(2):has(.before-8 ._fldi), .order-ticket__attach-orders > p, div.before-8:has(span[aria-label="Price Management Algo"]) {display:none!important;}');
-  // sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], ' + ptf + ' div.ptf-positions table td div[fix="84"] {opacity:0.6;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"], ' + ptf + ' div.ptf-positions table td div[fix="88"] {color:#3392ff;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7671"] span, ' + ptf + ' div.ptf-positions table td div[fix="7287"] span, ' + ptf + ' div.ptf-positions table td div[fix="7286"] span {color:#ac70cc;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7288"] span {color:#a754d4;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7288"] {position: relative;left: -5px;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td[conid] {overflow: visible;}');
-  sheet.insertRule('.portfolio-summary__list > .portfolio-summary__list__item:nth-last-child(1 of .portfolio-summary__list__item) span.numeric {color:#a754d4;font-weight:600;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7281"] span, ' + ptf + ' div.ptf-positions table td div[fix="7087"] span, ' + ptf + ' div.ptf-positions table td div[fix="7281"] span, ' + ptf + ' div.ptf-positions table td div[fix="7639"] span {color:#939393;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="85"],' + ptf + ' div.ptf-positions table td div[fix="88"], ' + ptf + ' div.ptf-positions table td._npos {width: 80px!important;}');
-  sheet.insertRule(ptf + ' div.ptf-positions table td:has(span[fix="83"]) {overflow: visible;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table col:nth-child(12) {width: 90px!important;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table col:nth-child(3), ' + ptf + ' div.ptf-positions table col:nth-child(8){width: 100px!important;}');
-  sheet.insertRule("div.bid-ask-yield span {font-size: 1.325rem;line-height: 17px;font-weight: 600;}");
-  sheet.insertRule("div.quote-bidask-val {font-size: 1.325rem;line-height: 24px;font-weight: 600;}");
-  sheet.insertRule("div.bid-ask-container span {font-size: 1.425rem;font-weight: 600;}");
-  sheet.insertRule(ptf + ".ptf-positions td {font-size: 110%;}");
-  sheet.insertRule(ptf + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._nneg) td span[fix="80"] {color: #e62333;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table tr:has(td span[fix="77_raw"]._npos) td span[fix="80"] {color: #0eb35b;}');
-  sheet.insertRule('.order-pane .odr-sbmt .outsety-32, .order-pane .odr-sbmt .fs7, .pos-widget table td, .order_ticket__submit-view .order_ticket__status-text, .order_ticket__submit-view__compact-table td, .order-ticket__order-preview-sidebar p, .order-ticket__order-preview-sidebar table td {font-size: 130%;}');
-  sheet.insertRule('.order-pane .grow, .order-ticket__order-details-pane .grow {flex: none;}');
-  sheet.insertRule('.pos-widget table td span.fg-sell:before {content: "⮟";margin-right: 6px;}');
-  sheet.insertRule('.pos-widget table td span.fg-buy:before {content: "⮝";margin-right: 6px;}');
-  sheet.insertRule('.pos-widget table td span.fg-buy, ' + ptf + ' .pos-widget table td span.fg-sell {padding: 7px 12px;border-radius: 9px;font-weight: 600;}');
-  sheet.insertRule('.pos-widget table td span.fg-buy {background-color: rgb(7, 55, 99);}');
-  sheet.insertRule('.pos-widget table td span.fg-sell {background-color: rgb(99, 7, 7);}');
-  sheet.insertRule(ptf + "#cp-header div.nav-container {position: absolute;left: 888px;top: -5px;width: 65%;}");
-  sheet.insertRule(ptf + "div.side-panel {max-width: 328px!important;}");
-  sheet.insertRule(ptf + "div.sl-search-bar {zoom: 0.8;background-color: #150f0c;}");
-  sheet.insertRule(ptf + "div.ib-bar3__trade-btn-container {top: -20px;position: relative;}");
-  sheet.insertRule(ptf + "div.sl-search-results {zoom: 1.2;}");
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7743"] {color: #bdcc70;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="86"], div.ptf-positions table td div[fix="84"] {opacity:0.9;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7681"] span, ' + ptf + 'div.ptf-positions table td div[fix="7678"] span, ' + ptf + 'div.ptf-positions table td div[fix="7679"] span {color: #ae7102;}');
-  sheet.insertRule(ptf + 'div.ptf-positions table td div[fix="7290"] span{color: #70ccc8;}');
-  sheet.insertRule(ptf + "div.ptf-positions table {min-width: 2343px!important;}");
-  sheet.insertRule(ptf + "div.dashboard__sub-pages > div > div._tabs2 {background-color:#1d212b;position: absolute;top: 0px;z-index: 1030;zoom: 0.8;left: 869px;}");
-  sheet.insertRule(ptf + "div.dashboard__sub-pages .after-16 {margin-bottom: 8px;}");
-  sheet.insertRule(ptf + "div.ptf-positions table td.bg15-accent span {font-size: 23px;line-height: 16.6px;top: 1px;position: relative;}");
-  sheet.insertRule(ptf + 'div.ptf-positions table td:has(div[fix="7288"]).bg15-accent span, #cp-ptf-positions-table0 tr > :nth-child(4) span, ' + ptf + 'div.ptf-positions table td[conid].bg15-accent span[dir] {font-size: inherit;}');
-  sheet.insertRule(ptf + "div.ptf-positions > div.flex-fixed {position: absolute;top: 6px;left: 1258px;z-index: 1030;width: 888px;}");
-  sheet.insertRule(ptf + 'div.ptf-positions table tr > td:nth-child(3) div, ' + ptf + ' div.ptf-positions table td.bg15-accent {overflow:visible;}');
-  sheet.insertRule(ptf + 'div.ptf-positions h3, ' + ptf + ' .quote-mini-chart .highcharts-container {cursor:pointer;}');
-  sheet.insertRule(ptf + "div.ptf-positions h3 {display:inline;}");
-  sheet.insertRule(ptf + ".quote-bidask-val .fs7 {font-size: 1.125rem;line-height: 24px;font-weight: 600;}");
-  sheet.insertRule(ptf + ".ptf-models .ib-row.after-64 {margin-bottom: 0px!important;}");
-  sheet.insertRule(ptf + ".tws-shortcuts {margin-top: 150px;}");
-  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col {position: absolute;left: 0px;top: 336px;width: 325px;margin: 0px;}");
-  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(2) {width: 60%!important;}");
-  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(3) {width: 40%!important;}");
-  sheet.insertRule(ptf + ".ptf-models .ib-row .ib-col table col:nth-child(4) {width: 0px!important;}");
-  sheet.insertRule(ptf + 'div.ptf-positions > div.flex-fixed span.end-4, ' + ptf + ' .ptf-models .ib-row .ib-col table thead, ' + ptf + ' .ptf-models .ib-row .ib-col div.flex-fixed, ' + ptf + ' .ptf-models .ib-row .ib-col table tr td:nth-child(4), ' + ptf + ' .ptf-models div.ib-row div button._btn.lg {display:none;}');
-  sheet.insertRule("@keyframes fadeOpacity {from { opacity: 0.9; }to   { opacity: 0.6; }}");
-  sheet.insertRule(ptf + ".fade-opacity {animation: fadeOpacity 21s linear forwards;}");
-  sheet.insertRule('.order-info__block input[name="quantity"], .order-info__block input.numeric, .order-ticket__sidebar--grid input[name="quantity"], .order-ticket__sidebar--grid input[name="auxPrice"], .order-ticket__sidebar--grid input[name="price"] {font-weight: 600;font-size: 30px;}');
-  sheet.insertRule(ptf + 'span#toggleCustomView {font-size: 16px;font-weight: normal;}');
-  sheet.insertRule(ptf + 'div.nav-container button[aria-label="Trade"].nav-item {font-size:0px;position:relative;left:212px;}');
-  sheet.insertRule(ptf + '.after-32 {margin-bottom: 0px!important;}');
-  sheet.insertRule(ptf + '.dashboard__sub-pages .insetx-24 {padding-left: 0px!important;padding-right: 0px;!important;}');
-  sheet.insertRule('div.side-panel__content textarea#calcNotes {width: 94%;margin-top: 10px;text-transform: uppercase;opacity: 0.4;margin-left: 15px;height: 230px;font-size: 21px;background: transparent;border: 0px!important;outline-width: 0px !important;color: inherit;}');
-  sheet.insertRule('div.side-panel__content button.pill {color: rgb(189, 204, 112);}');
-  sheet.insertRule('div.quote-main div.quote-symprice h1 div {cursor: pointer;}');
-  sheet.insertRule('div.quote-main div.quote-symprice h1:has(div:hover) {text-decoration: underline;}');
-  sheet.insertRule('div#minicharts > div {z-index: 3;position: fixed;position-area: left center;right: -169px;}');
-  sheet.insertRule('div#minicharts > div[data-title]:hover::after {content: attr(data-title);position: absolute;top: -100%;left: 10px;pointer-events: none;box-shadow:color-mix(in srgb, rgb(0,0,0) 30%,transparent) 0 1px 2px 0, color-mix(in srgb, rgb(0,0,0) 15%,transparent) 0 2px 6px 2px;padding:5px 8px;font-feature-settings: "tnum";font-variant-numeric: tabular-nums;display:block;background-color:#292a2d;border-radius:8px;font-size:19.36px;color:white;font-family:Proxima Nova,Verdana,Arial,sans-serif;white-space: pre;}');
-  sheet.insertRule('body {scrollbar-color:hsla(0,0%,60%,.12) transparent!important;}');
-  sheet.insertRule('.portfolio-summary__list .expand-offset {padding-inline-end:0px;}');
-  sheet.insertRule('.portfolio-summary__header {padding-right:0px;}');
-  sheet.insertRule('.order-ticket__sidebar--expanded form > ._formo {padding-top:16px;}');
-  sheet.insertRule('.order-ticket__price-info > div:nth-child(2), .order-ticket__attach-orders {padding-top:5px;}');
-  // sheet.insertRule('._con .bg15-accent {background-color: rgb(115 68 9 / 25%);}');
-  sheet.insertRule(tv + 'div.quote-nav {display:none!important;}');
-  sheet.insertRule(fund + 'div.quote-nav {display:none!important;}');
-};
-
 (new MutationObserver((records) => {
   mutation(records);
 })).observe(document.body, { childList: true, subtree: true });
 
 window.addEventListener("load", async () => {
-  css();
+  css(true);
   links();
   await speaker();
   await notes();
@@ -761,6 +1148,7 @@ window.addEventListener("load", async () => {
 
 window.navigation.addEventListener("navigate", async () => {
   setTimeout(async () => {
+    css(false);
     links();
     await notes();
   }, 500);
