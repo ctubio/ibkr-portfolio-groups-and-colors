@@ -1085,6 +1085,11 @@ div.ptf-positions h3,
   cursor: pointer;
 }`);
   sheet.insertRule(`
+.omnisearch-button {
+    top: 10px;
+    position: relative;
+}`);
+  sheet.insertRule(`
 div.ptf-positions h3 {
   display: inline;
 }`);
