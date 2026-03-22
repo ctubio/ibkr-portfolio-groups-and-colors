@@ -9,7 +9,7 @@
    },
    "content_scripts": [ {
       "js": [ "content.js" ],
-      "matches": [ "https://www.interactivebrokers.ie/*" ]
+      "matches": [ "https://www.interactivebrokers.ie/portal/*" ]
    } ],
    "default_locale": "en",
    "host_permissions": [ "https://www.interactivebrokers.ie/*" ],
