@@ -283,7 +283,7 @@ async function enhanceCounter() {
 }
 
 function transformCopyPaste(val) {
-  const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Bought[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+  const bought = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nBot (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Bought[\t|\s][\d+|,]+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
   if (bought) {
     if (parseFloat(bought[3]).toString().length<3) {
       bought[3] = "0".repeat(3-parseFloat(bought[3]).toString().length) + bought[3];
@@ -293,7 +293,7 @@ function transformCopyPaste(val) {
     }
     return bought[1].trim() + "\n+" + bought[2] + " " + bought[3] + " @ " + bought[4] /*+ "-" + (parseFloat(bought[5]) + parseFloat(bought[6])).toFixed(2)*/ + "\n" + bought[7];
   } else {
-    const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Sold[\t|\s]\d+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
+    const sold = val.match(/([\S|\n|\s]*)\n\t?(\S+)\nSold (\d+) @ ([\.|\d]+) on \S+\n\t?\S+[\t|\s]Sold[\t|\s][\d+|,]+[\t|\s]\nFilled\n[\d|:|/|,| ]+ \S+\n\t?[\d+|\.]+[\t|\s]\n([\d+|\.]+)\nFees: ([\d+|\.]+)\n*([\S|\n|\s]*)/);
     if (sold) {
       if (parseFloat(sold[3]).toString().length<3) {
         sold[3] = "0".repeat(3-parseFloat(sold[3]).toString().length) + sold[3];
@@ -595,6 +595,12 @@ const notes = async () => {
     if (location.href.indexOf('/dashboard') > -1)
       setTimeout(notes, 3000);
   } else if (!document.getElementById('calcNotes')) {
+
+    // const vidtv = document.createElement("video");
+    // vidtv.id = 'tvNews';
+    // vidtv.src = 'https://www.bloomberg.com/media-manifest/streams/phoenix-us.m3u8';
+    // sdiv.after(vidtv);
+
     const text = document.createElement("textarea");
     text.id = 'calcNotes';
     text.spellcheck = false;
@@ -949,6 +955,12 @@ div#minicharts > div[data-title]:hover::after {
   sheet.insertRule(`
 body {
   scrollbar-color: hsla(0, 0%, 60%, 0.12) transparent !important;
+}`);
+  sheet.insertRule(`
+video#tvNews {
+  width: 300px;
+  height: 170px;
+  margin-left: 15px;
 }`);
   sheet.insertRule(`
 .portfolio-summary__list .expand-offset {
