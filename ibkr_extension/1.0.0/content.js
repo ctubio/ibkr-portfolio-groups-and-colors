@@ -310,6 +310,8 @@ function transformCopyPaste(val) {
 var timeOut;
 var charts = {};
 var volumes = {fix85:{},fix88:{}};
+var lastClose = {};
+var todaylow = {};
 const mutation = async (records) => {
   for (const r of records) {
     if (!r.addedNodes[0]) continue;
@@ -318,14 +320,42 @@ const mutation = async (records) => {
       const num = parseFloat(r.addedNodes[0].data.replace(',', '').replace('C', '').replace('F', ''));
       if (!Number(num)) continue;
       const conid = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1].attributes.conid?.value;
-      if (!conid || visible.indexOf(conid) == -1) continue;
-      ((conid, num) => {
-        setTimeout(() => {
-          if (!charts[conid]) charts[conid] = sparkline(conid);
-          charts[conid](num);
-        }, 1);
-      })(conid, num);
+      if (!conid) continue;
+	  if (lastClose.hasOwnProperty(conid) && lastClose[conid] > 0) {
+        var color = "inherit";
+        if (lastClose[conid] != num) {
+          color = num > lastClose[conid] ? "#0eb35b" : "#e62333";
+        }
+        applyCssRule('lastclose_'+conid, 0, 'div.ptf-positions table tr:has(td[conid="'+conid+'"]) td div[fix="7741"] span {color:'+color+'}');
+	  }
+      if (visible.indexOf(conid) > -1) {
+		  ((conid, num) => {
+			setTimeout(() => {
+			  if (!charts[conid]) charts[conid] = sparkline(conid);
+			  charts[conid](num);
+			}, 1);
+		  })(conid, num);
+	  }
     }
+	
+    else if (r.target.parentNode && r.target.parentNode.attributes.fix && r.target.parentNode.attributes.fix.value == '7741') {
+      const conid = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1]?.attributes.conid?.value;
+      if (!conid) continue;
+      lastClose[conid] = parseFloat(r.addedNodes[0].data || "0");
+    }
+    else if (r.target.parentNode && r.target.parentNode.attributes.fix && r.target.parentNode.attributes.fix.value == '71') {
+      const conid = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1]?.attributes.conid?.value;
+      if (!conid) continue;
+      todaylow[conid] = parseFloat(r.addedNodes[0].data || "0");
+	  if (lastClose.hasOwnProperty(conid) && lastClose[conid] > 0 && todaylow[conid] > 0) {
+        var color = "inherit";
+        if (lastClose[conid] != todaylow[conid]) {
+          color = todaylow[conid] > lastClose[conid] ? "#0eb35b" : "#e62333";
+        }
+        applyCssRule('todaylow_'+conid, 0, 'div.ptf-positions table tr:has(td[conid="'+conid+'"]) td div[fix="71"] span {color:'+color+'}');
+	  }
+    }
+	
     else if (r.target.parentNode && r.target.parentNode.attributes.fix && ['85','88'].indexOf(r.target.parentNode.attributes.fix.value) > -1) {
       const conid = r.target.parentNode.parentNode.parentNode.getElementsByTagName("td")[1]?.attributes.conid?.value;
       const is85or88 = r.target.parentNode.attributes.fix.value == '85';
@@ -994,12 +1024,12 @@ textarea#calcNotes {
   color: inherit;
 }`);
   sheet.insertRule(`
-div.ptf-positions col:nth-child(12) {
+div.ptf-positions col:nth-child(14) {
   width: 90px !important;
 }`);
   sheet.insertRule(`
 div.ptf-positions col:nth-child(3),
-div.ptf-positions col:nth-child(8) {
+div.ptf-positions col:nth-child(10) {
   width: 100px !important;
 }`);
   sheet.insertRule(`
