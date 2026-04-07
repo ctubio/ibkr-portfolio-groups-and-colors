@@ -1024,6 +1024,7 @@ textarea#calcNotes {
   color: inherit;
 }`);
   sheet.insertRule(`
+div.ptf-positions col:nth-child(5),
 div.ptf-positions col:nth-child(14) {
   width: 90px !important;
 }`);
