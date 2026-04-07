@@ -1025,6 +1025,8 @@ textarea#calcNotes {
 }`);
   sheet.insertRule(`
 div.ptf-positions col:nth-child(5),
+div.ptf-positions col:nth-child(6),
+div.ptf-positions col:nth-child(7),
 div.ptf-positions col:nth-child(14) {
   width: 90px !important;
 }`);
