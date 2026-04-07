@@ -1032,6 +1032,7 @@ div.ptf-positions col:nth-child(14) {
 }`);
   sheet.insertRule(`
 div.ptf-positions col:nth-child(3),
+div.ptf-positions col:nth-child(13),
 div.ptf-positions col:nth-child(10) {
   width: 100px !important;
 }`);
