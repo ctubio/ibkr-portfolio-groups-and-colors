@@ -1025,15 +1025,15 @@ textarea#calcNotes {
 }`);
   sheet.insertRule(`
 div.ptf-positions col:nth-child(5),
-div.ptf-positions col:nth-child(6),
-div.ptf-positions col:nth-child(7),
-div.ptf-positions col:nth-child(14) {
+div.ptf-positions col:nth-child(13),
+div.ptf-positions col:nth-child(14),
+div.ptf-positions col:nth-child(12) {
   width: 90px !important;
 }`);
   sheet.insertRule(`
 div.ptf-positions col:nth-child(3),
-div.ptf-positions col:nth-child(13),
-div.ptf-positions col:nth-child(10) {
+div.ptf-positions col:nth-child(11),
+div.ptf-positions col:nth-child(8) {
   width: 100px !important;
 }`);
   sheet.insertRule(`
